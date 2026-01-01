@@ -323,6 +323,30 @@ class MediaPlayer extends ChangeNotifier {
     }
   }
 
+  Future<List<AudioSource>> _getAudioSources(List songs) async {
+    return await Future.wait(
+      songs.map(
+        (song) async {
+          final mapSong = Map<String, dynamic>.from(song);
+          return await _getAudioSource(mapSong);
+        },
+      ),
+    );
+  }
+
+  Future<List> _getPlaylistSongs(Map<String, dynamic> mediaItem) async {
+    if (mediaItem['songs'] != null) {
+      // Get Custom or Downloaded Playlist songs
+      return mediaItem['songs'];
+    } else {
+      // Get Online Playlist songs
+      return mediaItem['type'] == 'ARTIST'
+          ? await GetIt.I<YTMusic>()
+              .getNextSongList(playlistId: mediaItem['playlistId'])
+          : await GetIt.I<YTMusic>().getPlaylistSongs(mediaItem['playlistId']);
+    }
+  }
+
   Future<void> playSong(Map<String, dynamic> song) async {
     if (song['videoId'] == null) return;
 
@@ -350,21 +374,12 @@ class MediaPlayer extends ChangeNotifier {
       if (sequenceLength > 0) {
         await _player.insertAudioSource(insertIndex, audioSource);
       } else {
-        // If queue is empty, just set and start playing
+        // If queue is empty, just set audio source
         await _player.setAudioSource(audioSource);
       }
-
-      // Case 2: Custom or Downloaded Playlist
-    } else if (mediaItem['songs'] != null) {
-      List songs = mediaItem['songs'];
-      await _addSongListToQueue(songs, isNext: true);
-
-      // Case 3: Online Playlist
-    } else if (mediaItem['playlistId'] != null) {
-      List songs = mediaItem['type'] == 'ARTIST'
-          ? await GetIt.I<YTMusic>()
-              .getNextSongList(playlistId: mediaItem['playlistId'])
-          : await GetIt.I<YTMusic>().getPlaylistSongs(mediaItem['playlistId']);
+    } else {
+      // Case 2: Playlist
+      List songs = await _getPlaylistSongs(mediaItem);
       await _addSongListToQueue(songs, isNext: true);
     }
   }
@@ -374,10 +389,7 @@ class MediaPlayer extends ChangeNotifier {
     await _player.clearAudioSources();
 
     // Build full list and set atomically
-    final List<AudioSource> sources = [];
-    for (final s in songs) {
-      sources.add(await _getAudioSource(Map<String, dynamic>.from(s)));
-    }
+    final List<AudioSource> sources = await _getAudioSources(songs);
 
     await _player.setAudioSources(sources);
     await _player.seek(Duration.zero, index: index);
@@ -387,19 +399,17 @@ class MediaPlayer extends ChangeNotifier {
   Future<void> addToQueue(Map<String, dynamic> mediaItem) async {
     // Case 1: A single video/song
     if (mediaItem['videoId'] != null) {
-      await _player.addAudioSource(await _getAudioSource(mediaItem));
-
-      // Case 2: Custom or Downloaded Playlist
-    } else if (mediaItem['songs'] != null) {
-      List songs = mediaItem['songs'];
-      await _addSongListToQueue(songs, isNext: false);
-
-      // Case 3: Online Playlist
-    } else if (mediaItem['playlistId'] != null) {
-      List songs = mediaItem['type'] == 'ARTIST'
-          ? await GetIt.I<YTMusic>()
-              .getNextSongList(playlistId: mediaItem['playlistId'])
-          : await GetIt.I<YTMusic>().getPlaylistSongs(mediaItem['playlistId']);
+      final audioSource = await _getAudioSource(mediaItem);
+      if (_player.sequence.isEmpty) {
+        // If queue is empty, just set audio source
+        await _player.setAudioSource(audioSource);
+      } else {
+        // If player already has something in the queue
+        await _player.addAudioSource(audioSource);
+      }
+      // Case 2: Playlist
+    } else {
+      List songs = await _getPlaylistSongs(mediaItem);
       await _addSongListToQueue(songs, isNext: false);
     }
   }
@@ -446,22 +456,23 @@ class MediaPlayer extends ChangeNotifier {
     if (songs.isEmpty) return;
 
     // Convert your song objects into AudioSources
-    final newSources = await Future.wait(songs.map((song) async {
-      final mapSong = Map<String, dynamic>.from(song);
-      return await _getAudioSource(mapSong);
-    }));
+    final newSources = await _getAudioSources(songs);
 
     // Current queue length
     final queueLength = _player.sequence.length;
-
-    if (isNext) {
-      // Insert immediately after the current index
-      final currentIndex = _player.currentIndex ?? -1;
-      int insertIndex = (currentIndex + 1).clamp(0, queueLength);
-      await _player.insertAudioSources(insertIndex, newSources);
+    if (queueLength > 0) {
+      if (isNext) {
+        // Insert immediately after the current index
+        final currentIndex = _player.currentIndex ?? -1;
+        int insertIndex = (currentIndex + 1).clamp(0, queueLength);
+        await _player.insertAudioSources(insertIndex, newSources);
+      } else {
+        // Append to the end
+        await _player.addAudioSources(newSources);
+      }
     } else {
-      // Append to the end
-      await _player.addAudioSources(newSources);
+      // If queue is empty, just set audio sources
+      await _player.setAudioSources(newSources);
     }
   }
 

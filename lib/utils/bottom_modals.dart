@@ -1292,7 +1292,7 @@ BottomModalLayout _downloadDetailsBottomModal(
       contentPadding: EdgeInsets.zero,
       title:
           Text(playlist['title'], maxLines: 1, overflow: TextOverflow.ellipsis),
-      leading: (playlist['songs']?.length > 0)
+      leading: (playlist['songs']?.length > 0 && playlist['type'] != "SONGS")
           ? (playlist['type'] == "ALBUM")
               ? PlaylistThumbnail(
                   playslist: [playlist['songs'][0]], size: 50, radius: 8)

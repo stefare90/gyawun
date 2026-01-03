@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -67,7 +68,7 @@ class DownloadScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(3),
                                   ),
                                   child: Icon(
-                                    Icons.music_note,
+                                    CupertinoIcons.music_note_list,
                                     color: context.isDarkMode
                                         ? Colors.white
                                         : Colors.black,

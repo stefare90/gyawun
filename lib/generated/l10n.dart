@@ -1076,6 +1076,11 @@ class S {
       args: [],
     );
   }
+
+  /// `Play All`
+  String get PlayAll {
+    return Intl.message('Play All', name: 'PlayAll', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

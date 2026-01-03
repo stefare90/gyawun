@@ -269,5 +269,7 @@
   "QueuedCount": "Queued ({count})",
   "@QueuedCount": {},
   "FileNotFound": "File not found",
-  "@FileNotFound": {}
+  "@FileNotFound": {},
+  "PlayAll": "Play All",
+  "@PlayAll": {}
 }

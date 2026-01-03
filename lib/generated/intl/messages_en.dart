@@ -163,6 +163,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "Personalised_Content": MessageLookupByLibrary.simpleMessage(
       "Personalised Content",
     ),
+    "PlayAll": MessageLookupByLibrary.simpleMessage("Play All"),
     "Play_Next": MessageLookupByLibrary.simpleMessage("Play Next"),
     "Playback_History_Deleted": MessageLookupByLibrary.simpleMessage(
       "Playback History Deleted",

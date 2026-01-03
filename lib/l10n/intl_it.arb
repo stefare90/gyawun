@@ -269,5 +269,7 @@
   "QueuedCount": "In coda ({count})",
   "@QueuedCount": {},
   "FileNotFound": "File non trovato",
-  "@FileNotFound": {}
+  "@FileNotFound": {},
+  "PlayAll": "Riproduci",
+  "@PlayAll": {}
 }

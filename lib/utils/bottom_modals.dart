@@ -1032,8 +1032,7 @@ BottomModalLayout _playlistBottomModal(BuildContext context, Map playlist) {
       contentPadding: EdgeInsets.zero,
       title:
           Text(playlist['title'], maxLines: 1, overflow: TextOverflow.ellipsis),
-      leading: playlist['isPredefined'] != false ||
-              (playlist['songs'] != null && playlist['songs']?.length > 0)
+      leading: (playlist['isPredefined'] != false)
           ? ClipRRect(
               borderRadius:
                   BorderRadius.circular(playlist['type'] == 'ARTIST' ? 50 : 10),
@@ -1049,19 +1048,22 @@ BottomModalLayout _playlistBottomModal(BuildContext context, Map playlist) {
                 width: 50,
               ),
             )
-          : Container(
-              height: 50,
-              width: 50,
-              decoration: BoxDecoration(
-                color: greyColor,
-                borderRadius: BorderRadius.circular(
-                    playlist['type'] == 'ARTIST' ? 50 : 10),
-              ),
-              child: Icon(
-                CupertinoIcons.music_note_list,
-                color: context.isDarkMode ? Colors.white : Colors.black,
-              ),
-            ),
+          : (playlist['songs'] != null && playlist['songs']?.length > 0)
+              ? PlaylistThumbnail(
+                  playslist: playlist['songs'], size: 50, radius: 8)
+              : Container(
+                  height: 50,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: greyColor,
+                    borderRadius: BorderRadius.circular(
+                        playlist['type'] == 'ARTIST' ? 50 : 10),
+                  ),
+                  child: Icon(
+                    CupertinoIcons.music_note_list,
+                    color: context.isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
       subtitle: playlist['subtitle'] != null
           ? Text(playlist['subtitle'],
               maxLines: 1, overflow: TextOverflow.ellipsis)

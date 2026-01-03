@@ -32,6 +32,8 @@ class FavouriteDetailsScreen extends StatelessWidget {
                       CustomPlayistHeader(
                         playlist: {
                           'title': S.of(context).Favourites,
+                          'playlistId': 'FAVOURITES',
+                          'isPredefined': false,
                           'songs': box.values.toList()
                         },
                         bottomModal: Modals.showFavouritesBottomModal,

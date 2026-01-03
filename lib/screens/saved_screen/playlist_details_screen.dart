@@ -43,7 +43,8 @@ class PlaylistDetailsScreen extends StatelessWidget {
                 constraints: const BoxConstraints(maxWidth: 1000),
                 child: ListView(
                   children: [
-                    MyPlayistHeader(playlist: playlist),
+                    MyPlayistHeader(
+                        playlist: {...playlist, 'playlistId': playlistkey}),
                     const SizedBox(height: 8),
                     ListView(
                       shrinkWrap: true,
@@ -143,7 +144,8 @@ class MyPlayistHeader extends StatelessWidget {
           );
   }
 
-  Padding _buildContent(Map playlist, BuildContext context, {bool isRow = false}) {
+  Padding _buildContent(Map playlist, BuildContext context,
+      {bool isRow = false}) {
     return Padding(
       padding: const EdgeInsets.only(left: 8, top: 4),
       child: Column(
@@ -191,6 +193,19 @@ class MyPlayistHeader extends StatelessWidget {
                     ],
                   ),
                 ),
+              AdaptiveFilledButton(
+                shape: const CircleBorder(),
+                color: greyColor,
+                padding: const EdgeInsets.all(14),
+                onPressed: () {
+                  Modals.showPlaylistBottomModal(context, playlist);
+                },
+                child: Icon(
+                  AdaptiveIcons.more_vertical,
+                  size: 20,
+                  color: context.isDarkMode ? Colors.white : Colors.black,
+                ),
+              )
             ],
           )
         ],

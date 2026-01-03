@@ -89,6 +89,14 @@ class _SavedScreenState extends State<SavedScreen> {
                     ),
                     trailing: Icon(AdaptiveIcons.chevron_right),
                     onTap: () => context.push('/saved/favourite_details'),
+                    onSecondaryTap: () {
+                      Modals.showFavouritesBottomModal(context,
+                          {'songs': Hive.box('FAVOURITES').values.toList()});
+                    },
+                    onLongPress: () {
+                      Modals.showFavouritesBottomModal(context,
+                          {'songs': Hive.box('FAVOURITES').values.toList()});
+                    },
                   ),
                   AdaptiveListTile(
                     margin: const EdgeInsets.symmetric(vertical: 4),

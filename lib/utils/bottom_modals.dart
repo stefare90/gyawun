@@ -120,6 +120,17 @@ class Modals {
     );
   }
 
+  static void showFavouritesBottomModal(BuildContext context, Map playlist) {
+    showModalBottomSheet(
+      useRootNavigator: false,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      isScrollControlled: true,
+      context: context,
+      builder: (context) => _favouritesBottomModal(context, playlist),
+    );
+  }
+
   static void showDownloadBottomModal(BuildContext context) {
     showModalBottomSheet(
       useRootNavigator: false,
@@ -1078,6 +1089,154 @@ BottomModalLayout _playlistBottomModal(BuildContext context, Map playlist) {
           : null,
     ),
     child: SingleChildScrollView(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        AdaptiveListTile(
+          dense: true,
+          title: Text(S.of(context).Play_Next),
+          leading: Icon(AdaptiveIcons.playlist_play),
+          onTap: () async {
+            Navigator.pop(context);
+            await GetIt.I<MediaPlayer>().playNext(Map.from(playlist));
+          },
+        ),
+        AdaptiveListTile(
+          dense: true,
+          title: Text(S.of(context).Add_To_Queue),
+          leading: Icon(AdaptiveIcons.queue_add),
+          onTap: () async {
+            Navigator.pop(context);
+            await GetIt.I<MediaPlayer>().addToQueue(Map.from(playlist));
+          },
+        ),
+        AdaptiveListTile(
+          dense: true,
+          title: Text(S.of(context).Download),
+          leading: Icon(AdaptiveIcons.download),
+          onTap: () async {
+            Navigator.pop(context);
+            BottomMessage.showText(context, S.of(context).Download_Started);
+            GetIt.I<DownloadManager>().downloadPlaylist(playlist);
+          },
+        ),
+        if (playlist['isPredefined'] == false)
+          AdaptiveListTile(
+            dense: true,
+            leading: const Icon(Icons.title),
+            title: Text(S.of(context).Rename),
+            onTap: () {
+              Navigator.pop(context);
+              Modals.showPlaylistRenameBottomModal(context,
+                  playlistId: playlist['playlistId'], name: playlist['title']);
+            },
+          ),
+        AdaptiveListTile(
+          dense: true,
+          title: Text(
+            context.watch<LibraryService>().getPlaylist(
+                        playlist['playlistId'] ??
+                            playlist['endpoint']['browseId']) ==
+                    null
+                ? S.of(context).Add_To_Library
+                : S.of(context).Remove_From_Library,
+          ),
+          leading: Icon(context.watch<LibraryService>().getPlaylist(
+                      playlist['playlistId'] ??
+                          playlist['endpoint']['browseId']) ==
+                  null
+              ? AdaptiveIcons.library_add
+              : AdaptiveIcons.library_add_check),
+          onTap: () {
+            Navigator.pop(context);
+            if (context
+                    .read<LibraryService>()
+                    .getPlaylist(playlist['playlistId']) ==
+                null) {
+              GetIt.I<LibraryService>()
+                  .addToOrRemoveFromLibrary(playlist)
+                  .then((String message) {
+                BottomMessage.showText(context, message);
+              });
+            } else {
+              Modals.showConfirmBottomModal(
+                context,
+                message: S.of(context).Delete_Item_Message,
+                isDanger: true,
+              ).then((bool confirm) {
+                if (confirm) {
+                  GetIt.I<LibraryService>()
+                      .addToOrRemoveFromLibrary(playlist)
+                      .then((String message) {
+                    BottomMessage.showText(context, message);
+                  });
+                }
+              });
+            }
+          },
+        ),
+        if (playlist['playlistId'] != null && playlist['type'] == 'ARTIST')
+          AdaptiveListTile(
+            dense: true,
+            title: Text(S.of(context).Start_Radio),
+            leading: Icon(AdaptiveIcons.radio),
+            onTap: () async {
+              Navigator.pop(context);
+              BottomMessage.showText(
+                  context, S.of(context).Songs_Will_Start_Playing_Soon);
+              await GetIt.I<MediaPlayer>().startRelated(Map.from(playlist),
+                  radio: true, isArtist: playlist['type'] == 'ARTIST');
+            },
+          ),
+        if (playlist['artists'] != null && playlist['artists'].isNotEmpty)
+          AdaptiveListTile(
+            dense: true,
+            title: Text(S.of(context).Artists),
+            leading: Icon(AdaptiveIcons.people),
+            trailing: Icon(AdaptiveIcons.chevron_right),
+            onTap: () {
+              Navigator.pop(context);
+              Modals.showArtistsBottomModal(context, playlist['artists'],
+                  leading: playlist['thumbnails'].first['url']);
+            },
+          ),
+        if (playlist['album'] != null)
+          AdaptiveListTile(
+            dense: true,
+            title: Text(S.of(context).Album,
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+            leading: Icon(AdaptiveIcons.album),
+            trailing: Icon(AdaptiveIcons.chevron_right),
+            onTap: () => context.push(
+              '/browse',
+              extra: {
+                'endpoint': playlist['album']['endpoint'],
+              },
+            ),
+          ),
+      ]),
+    ),
+  );
+}
+
+BottomModalLayout _favouritesBottomModal(BuildContext context, Map playlist) {
+  return BottomModalLayout(
+    title: AdaptiveListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(S.of(context).Favourites,
+          maxLines: 1, overflow: TextOverflow.ellipsis),
+      leading: Container(
+        height: 50,
+        width: 50,
+        decoration: BoxDecoration(
+          color: greyColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          AdaptiveIcons.heart_fill,
+          color: context.isDarkMode ? Colors.white : Colors.black,
+        ),
+      ),
+    ),
+    child: SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1109,101 +1268,6 @@ BottomModalLayout _playlistBottomModal(BuildContext context, Map playlist) {
               GetIt.I<DownloadManager>().downloadPlaylist(playlist);
             },
           ),
-          if (playlist['isPredefined'] == false)
-            AdaptiveListTile(
-              dense: true,
-              leading: const Icon(Icons.title),
-              title: Text(S.of(context).Rename),
-              onTap: () {
-                Navigator.pop(context);
-                Modals.showPlaylistRenameBottomModal(context,
-                    playlistId: playlist['playlistId'],
-                    name: playlist['title']);
-              },
-            ),
-          AdaptiveListTile(
-            dense: true,
-            title: Text(
-              context.watch<LibraryService>().getPlaylist(
-                          playlist['playlistId'] ??
-                              playlist['endpoint']['browseId']) ==
-                      null
-                  ? S.of(context).Add_To_Library
-                  : S.of(context).Remove_From_Library,
-            ),
-            leading: Icon(context.watch<LibraryService>().getPlaylist(
-                        playlist['playlistId'] ??
-                            playlist['endpoint']['browseId']) ==
-                    null
-                ? AdaptiveIcons.library_add
-                : AdaptiveIcons.library_add_check),
-            onTap: () {
-              Navigator.pop(context);
-              if (context
-                      .read<LibraryService>()
-                      .getPlaylist(playlist['playlistId']) ==
-                  null) {
-                GetIt.I<LibraryService>()
-                    .addToOrRemoveFromLibrary(playlist)
-                    .then((String message) {
-                  BottomMessage.showText(context, message);
-                });
-              } else {
-                Modals.showConfirmBottomModal(
-                  context,
-                  message: S.of(context).Delete_Item_Message,
-                  isDanger: true,
-                ).then((bool confirm) {
-                  if (confirm) {
-                    GetIt.I<LibraryService>()
-                        .addToOrRemoveFromLibrary(playlist)
-                        .then((String message) {
-                      BottomMessage.showText(context, message);
-                    });
-                  }
-                });
-              }
-            },
-          ),
-          if (playlist['playlistId'] != null && playlist['type'] == 'ARTIST')
-            AdaptiveListTile(
-              dense: true,
-              title: Text(S.of(context).Start_Radio),
-              leading: Icon(AdaptiveIcons.radio),
-              onTap: () async {
-                Navigator.pop(context);
-                BottomMessage.showText(
-                    context, S.of(context).Songs_Will_Start_Playing_Soon);
-                await GetIt.I<MediaPlayer>().startRelated(Map.from(playlist),
-                    radio: true, isArtist: playlist['type'] == 'ARTIST');
-              },
-            ),
-          if (playlist['artists'] != null && playlist['artists'].isNotEmpty)
-            AdaptiveListTile(
-              dense: true,
-              title: Text(S.of(context).Artists),
-              leading: Icon(AdaptiveIcons.people),
-              trailing: Icon(AdaptiveIcons.chevron_right),
-              onTap: () {
-                Navigator.pop(context);
-                Modals.showArtistsBottomModal(context, playlist['artists'],
-                    leading: playlist['thumbnails'].first['url']);
-              },
-            ),
-          if (playlist['album'] != null)
-            AdaptiveListTile(
-              dense: true,
-              title: Text(S.of(context).Album,
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-              leading: Icon(AdaptiveIcons.album),
-              trailing: Icon(AdaptiveIcons.chevron_right),
-              onTap: () => context.push(
-                '/browse',
-                extra: {
-                  'endpoint': playlist['album']['endpoint'],
-                },
-              ),
-            ),
         ],
       ),
     ),

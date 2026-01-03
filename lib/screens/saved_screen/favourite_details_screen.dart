@@ -23,63 +23,66 @@ class FavouriteDetailsScreen extends StatelessWidget {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 1000),
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              children: [
-                CustomPlayistHeader(
-                  playlist: {'songs': Hive.box('FAVOURITES').values.toList()},
-                  bottomModal: Modals.showPlaylistBottomModal,
-                  icon: AdaptiveIcons.heart_fill,
-                ),
-                ValueListenableBuilder(
-                  valueListenable: Hive.box('FAVOURITES').listenable(),
-                  builder: (context, box, child) {
-                    Map<String, dynamic> songs = Map.from(box.toMap());
-                    return Column(
-                      children: songs
-                          .map((key, song) {
-                            return MapEntry(
-                                key,
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: SwipeActionCell(
-                                    key: ObjectKey(key),
-                                    backgroundColor: Colors.transparent,
-                                    trailingActions: <SwipeAction>[
-                                      SwipeAction(
-                                          title: S.of(context).Remove,
-                                          onTap: (CompletionHandler
-                                              handler) async {
-                                            Modals.showConfirmBottomModal(
-                                                    context,
-                                                    message: S
-                                                        .of(context)
-                                                        .Remove_Message,
-                                                    isDanger: true)
-                                                .then(
-                                              (bool confirm) async {
-                                                if (confirm) {
-                                                  await box.delete(key);
-                                                }
-                                              },
-                                            );
-                                          },
-                                          color: Colors.red),
-                                    ],
-                                    child: LibraryTile(
-                                      songs: box.values.toList(),
-                                      index: box.values.toList().indexOf(song),
+            child: ValueListenableBuilder(
+                valueListenable: Hive.box('FAVOURITES').listenable(),
+                builder: (context, box, child) {
+                  Map<String, dynamic> songs = Map.from(box.toMap());
+                  return Column(
+                    children: [
+                      CustomPlayistHeader(
+                        playlist: {
+                          'title': S.of(context).Favourites,
+                          'songs': box.values.toList()
+                        },
+                        bottomModal: Modals.showFavouritesBottomModal,
+                        icon: AdaptiveIcons.heart_fill,
+                      ),
+                      Column(
+                        children: songs
+                            .map((key, song) {
+                              return MapEntry(
+                                  key,
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: SwipeActionCell(
+                                      key: ObjectKey(key),
+                                      backgroundColor: Colors.transparent,
+                                      trailingActions: <SwipeAction>[
+                                        SwipeAction(
+                                            title: S.of(context).Remove,
+                                            onTap: (CompletionHandler
+                                                handler) async {
+                                              Modals.showConfirmBottomModal(
+                                                      context,
+                                                      message: S
+                                                          .of(context)
+                                                          .Remove_Message,
+                                                      isDanger: true)
+                                                  .then(
+                                                (bool confirm) async {
+                                                  if (confirm) {
+                                                    await box.delete(key);
+                                                  }
+                                                },
+                                              );
+                                            },
+                                            color: Colors.red),
+                                      ],
+                                      child: LibraryTile(
+                                        songs: box.values.toList(),
+                                        index:
+                                            box.values.toList().indexOf(song),
+                                      ),
                                     ),
-                                  ),
-                                ));
-                          })
-                          .values
-                          .toList(),
-                    );
-                  },
-                ),
-              ],
-            ),
+                                  ));
+                            })
+                            .values
+                            .toList(),
+                      ),
+                    ],
+                  );
+                }),
           ),
         ),
       ),

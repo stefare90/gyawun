@@ -21,7 +21,7 @@ class CustomPlayistHeader extends StatelessWidget {
 
   final Map playlist;
   final IconData? icon;
-  final Function bottomModal;
+  final void Function(BuildContext context, Map playlist) bottomModal;
 
   Widget _buildImage(List songs, double maxWidth, {bool isDark = false}) {
     return (icon != null)

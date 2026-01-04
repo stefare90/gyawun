@@ -19,69 +19,67 @@ class FavouriteDetailsScreen extends StatelessWidget {
         title: Text(S.of(context).Favourites),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 1000),
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: ListenableBuilder(
-                listenable: GetIt.I<FavouritesManager>().listenable,
-                builder: (context, child) {
-                  Map<String, dynamic> songs =
-                      Map.from(GetIt.I<FavouritesManager>().songs);
-                  return Column(
-                    children: [
-                      CustomPlayistHeader(
-                        playlist: GetIt.I<FavouritesManager>().playlist,
-                        bottomModal: Modals.showFavouritesBottomModal,
-                        icon: AdaptiveIcons.heart_fill,
-                      ),
-                      Column(
-                        children: songs
-                            .map((key, song) {
-                              return MapEntry(
-                                  key,
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 4),
-                                    child: SwipeActionCell(
-                                      key: ObjectKey(key),
-                                      backgroundColor: Colors.transparent,
-                                      trailingActions: <SwipeAction>[
-                                        SwipeAction(
-                                            title: S.of(context).Remove,
-                                            onTap: (CompletionHandler
-                                                handler) async {
-                                              Modals.showConfirmBottomModal(
-                                                      context,
-                                                      message: S
-                                                          .of(context)
-                                                          .Remove_Message,
-                                                      isDanger: true)
-                                                  .then(
-                                                (bool confirm) async {
-                                                  if (confirm) {
-                                                    await GetIt.I<
-                                                            FavouritesManager>()
-                                                        .remove(song);
-                                                  }
-                                                },
-                                              );
-                                            },
-                                            color: Colors.red),
-                                      ],
-                                      child: LibraryTile(song: song),
-                                    ),
-                                  ));
-                            })
-                            .values
-                            .toList(),
-                      ),
-                    ],
-                  );
-                }),
-          ),
-        ),
+      body: ListenableBuilder(
+        listenable: GetIt.I<FavouritesManager>().listenable,
+        builder: (context, child) {
+          final playlist = GetIt.I<FavouritesManager>().playlist;
+          List songs = playlist["songs"];
+          return Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: CustomPlayistHeader(
+                      playlist: playlist,
+                      bottomModal: Modals.showFavouritesBottomModal,
+                      icon: AdaptiveIcons.heart_fill,
+                    ),
+                  ),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final song = songs[index];
+                        final videoId = song['videoId'];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: SwipeActionCell(
+                            key: ValueKey(videoId),
+                            backgroundColor: Colors.transparent,
+                            trailingActions: <SwipeAction>[
+                              SwipeAction(
+                                  title: S.of(context).Remove,
+                                  onTap: (CompletionHandler handler) async {
+                                    Modals.showConfirmBottomModal(context,
+                                            message:
+                                                S.of(context).Remove_Message,
+                                            isDanger: true)
+                                        .then(
+                                      (bool confirm) async {
+                                        if (confirm) {
+                                          await GetIt.I<FavouritesManager>()
+                                              .remove(song);
+                                        } else {
+                                          handler(false);
+                                        }
+                                      },
+                                    );
+                                  },
+                                  color: Colors.red),
+                            ],
+                            child: LibraryTile(song: song),
+                          ),
+                        );
+                      },
+                      childCount: songs.length,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

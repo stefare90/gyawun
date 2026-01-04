@@ -14,8 +14,14 @@ class FavouritesManager {
         'playlistId': playlistId,
         'type': 'PLAYLIST',
         'isPredefined': false,
-        'songs': _box.values.toList()
+        'songs': getOrderedSongs()
       };
+
+  List getOrderedSongs() {
+    final list = _box.values.toList();
+    list.sort((a, b) => (a['createdAt'] ?? 0).compareTo(b['createdAt'] ?? 0));
+    return list;
+  }
 
   bool isFavourite(Map? song) {
     if (song == null || song['videoId'] == null) return false;
@@ -26,7 +32,11 @@ class FavouritesManager {
     if (song != null) {
       await _box.put(
         song['videoId'],
-        {...song, 'createdAt': DateTime.now().millisecondsSinceEpoch},
+        {
+          ...song,
+          'createdAt':
+              song['createdAt'] ?? DateTime.now().millisecondsSinceEpoch
+        },
       );
     }
   }

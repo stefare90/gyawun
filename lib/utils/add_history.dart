@@ -9,8 +9,9 @@ Future<void> addHistory(Map song) async {
   if (_box.get('PLAYBACK_HISTORY', defaultValue: true)) {
     await addLocalHistory(song);
   }
+  final downloadSong = Hive.box('DOWNLOADS').toMap()[song['videoId']];
   if (_box.get('PERSONALISED_CONTENT', defaultValue: true) &&
-      song['status'] != 'DOWNLOADED') {
+      (downloadSong == null || downloadSong['status'] != 'DOWNLOADED')) {
     GetIt.I<YTMusic>().addYoutubeHistory(song['videoId']);
   }
 }

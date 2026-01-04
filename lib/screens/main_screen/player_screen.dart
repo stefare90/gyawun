@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/utils/song_thumbnail.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart';
@@ -498,30 +499,20 @@ class NameAndControls extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    ValueListenableBuilder(
-                      valueListenable: Hive.box('FAVOURITES').listenable(),
-                      builder: (context, value, child) {
-                        Map? item = value.get(song?.extras?['videoId']);
+                    ListenableBuilder(
+                      listenable: GetIt.I<FavouritesManager>().listenable,
+                      builder: (context, child) {
                         return AdaptiveIconButton(
                           icon: Icon(
-                            item == null
-                                ? AdaptiveIcons.heart
-                                : AdaptiveIcons.heart_fill,
+                            GetIt.I<FavouritesManager>()
+                                    .isFavourite(song?.extras)
+                                ? AdaptiveIcons.heart_fill
+                                : AdaptiveIcons.heart,
                             size: 30,
                           ),
                           onPressed: () async {
-                            if (item == null) {
-                              await Hive.box('FAVOURITES').put(
-                                song!.extras!['videoId'],
-                                {
-                                  ...song!.extras!,
-                                  'createdAt':
-                                      DateTime.now().millisecondsSinceEpoch
-                                },
-                              );
-                            } else {
-                              await value.delete(song!.extras!['videoId']);
-                            }
+                            GetIt.I<FavouritesManager>()
+                                .addOrRemove(song?.extras);
                           },
                         );
                       },

@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyawun/screens/settings_screen/setting_item.dart';
 import 'package:gyawun/services/bottom_message.dart';
+import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/services/file_storage.dart';
 import 'package:gyawun/services/library.dart';
 import 'package:gyawun/services/settings_manager.dart';
@@ -221,7 +222,7 @@ Future<void> _backup(BuildContext context) async {
     backup['data']['settings'] = settings;
   }
   if (items.contains('favourites')) {
-    Map favourites = Hive.box('FAVOURITES').toMap();
+    Map favourites = GetIt.I<FavouritesManager>().songs;
     backup['data']['favourites'] = favourites;
   }
   if (items.contains('song history')) {

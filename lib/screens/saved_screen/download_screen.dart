@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/themes/colors.dart';
 import 'package:gyawun/utils/extensions.dart';
 import 'package:gyawun/utils/playlist_thumbnail.dart';
@@ -42,13 +43,11 @@ class DownloadScreen extends StatelessWidget {
                 builder: (context, Map allPlaylists, snapshot) {
                   List<MapEntry> sortedEntries = allPlaylists.entries.toList();
                   sortedEntries.sort((a, b) {
-                    if (a.key == DownloadManager.songsPlaylistId) {
-                      return -1;
-                    } else if (b.key == DownloadManager.songsPlaylistId) {
-                      return 1;
-                    } else {
-                      return a.value['title'].compareTo(b.value['title']);
-                    }
+                    if (a.key == DownloadManager.songsPlaylistId) return -1;
+                    if (b.key == DownloadManager.songsPlaylistId) return 1;
+                    if (a.key == FavouritesManager.playlistId) return -1;
+                    if (b.key == FavouritesManager.playlistId) return 1;
+                    return a.value['title'].compareTo(b.value['title']);
                   });
                   return Column(
                     children: [
@@ -56,10 +55,15 @@ class DownloadScreen extends StatelessWidget {
                         final playlist = entry.value;
                         return AdaptiveListTile(
                           margin: const EdgeInsets.symmetric(vertical: 4),
-                          title: playlist['type'] == 'SONGS'
+                          title: playlist['id'] ==
+                                  DownloadManager.songsPlaylistId
                               ? Text(S.of(context).Songs)
-                              : Text(playlist['title']),
-                          leading: playlist['type'] == "SONGS"
+                              : playlist['id'] == FavouritesManager.playlistId
+                                  ? Text(S.of(context).Favourites)
+                                  : Text(playlist['title']),
+                          leading: playlist['id'] ==
+                                      DownloadManager.songsPlaylistId ||
+                                  playlist['id'] == FavouritesManager.playlistId
                               ? Container(
                                   height: 50,
                                   width: 50,
@@ -68,7 +72,10 @@ class DownloadScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(3),
                                   ),
                                   child: Icon(
-                                    CupertinoIcons.music_note_list,
+                                    playlist['id'] ==
+                                            DownloadManager.songsPlaylistId
+                                        ? CupertinoIcons.music_note_list
+                                        : AdaptiveIcons.heart_fill,
                                     color: context.isDarkMode
                                         ? Colors.white
                                         : Colors.black,

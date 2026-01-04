@@ -1,0 +1,55 @@
+import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+class FavouritesManager {
+  final Box _box = Hive.box('FAVOURITES');
+  static const playlistId = 'FVRTS';
+
+  ValueListenable<Box> get listenable => _box.listenable();
+
+  Map get songs => _box.toMap();
+
+  Map<String, dynamic> get playlist => {
+        'title': "Favourites",
+        'playlistId': playlistId,
+        'type': 'PLAYLIST',
+        'isPredefined': false,
+        'songs': _box.values.toList()
+      };
+
+  bool isFavourite(Map? song) {
+    if (song == null || song['videoId'] == null) return false;
+    return _box.containsKey(song['videoId']);
+  }
+
+  Future<void> add(Map? song) async {
+    if (song != null) {
+      await _box.put(
+        song['videoId'],
+        {...song, 'createdAt': DateTime.now().millisecondsSinceEpoch},
+      );
+    }
+  }
+
+  Future<void> remove(Map? song) async {
+    if (song != null) {
+      await _box.delete(song['videoId']);
+    }
+  }
+
+  Future<void> addOrRemove(Map? song) async {
+    if (song != null) {
+      if (isFavourite(song)) {
+        await remove(song);
+      } else {
+        await add(song);
+      }
+    }
+  }
+
+  Future<void> setFavourites(Map favourites) async {
+    await Future.forEach(favourites.values, (song) async {
+      await add(song);
+    });
+  }
+}

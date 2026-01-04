@@ -3,7 +3,9 @@ import 'dart:collection';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/utils/extensions.dart';
 import 'package:gyawun/utils/internet_guard.dart';
 import 'package:gyawun/utils/playlist_thumbnail.dart';
@@ -82,7 +84,7 @@ class _SavedScreenState extends State<SavedScreen> {
                       ),
                     ),
                     subtitle: ValueListenableBuilder(
-                      valueListenable: Hive.box('FAVOURITES').listenable(),
+                      valueListenable: GetIt.I<FavouritesManager>().listenable,
                       builder: (context, box, child) {
                         return Text(S.of(context).nSongs(box.length));
                       },
@@ -90,20 +92,16 @@ class _SavedScreenState extends State<SavedScreen> {
                     trailing: Icon(AdaptiveIcons.chevron_right),
                     onTap: () => context.push('/saved/favourite_details'),
                     onSecondaryTap: () {
-                      Modals.showFavouritesBottomModal(context, {
-                        'title': S.of(context).Favourites,
-                        'playlistId': 'FAVOURITES',
-                        'isPredefined': false,
-                        'songs': Hive.box('FAVOURITES').values.toList()
-                      });
+                      Modals.showFavouritesBottomModal(
+                        context,
+                        GetIt.I<FavouritesManager>().playlist,
+                      );
                     },
                     onLongPress: () {
-                      Modals.showFavouritesBottomModal(context, {
-                        'title': S.of(context).Favourites,
-                        'playlistId': 'FAVOURITES',
-                        'isPredefined': false,
-                        'songs': Hive.box('FAVOURITES').values.toList()
-                      });
+                      Modals.showFavouritesBottomModal(
+                        context,
+                        GetIt.I<FavouritesManager>().playlist,
+                      );
                     },
                   ),
                   AdaptiveListTile(

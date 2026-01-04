@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
+import 'package:gyawun/services/favourites_manager.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
@@ -180,9 +181,7 @@ class FileStorage {
       await GetIt.I<YTMusic>().refreshHeaders();
     }
     if (favourites != null) {
-      await Future.forEach(favourites.entries, (entry) async {
-        Hive.box('FAVOURITES').put(entry.key, entry.value);
-      });
+      await GetIt.I<FavouritesManager>().setFavourites(favourites);
     }
     if (playlists != null) {
       await GetIt.I<LibraryService>().setPlaylists(playlists);

@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/ytmusic/ytmusic.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart';
@@ -22,7 +23,7 @@ class DownloadManager {
   ValueNotifier<List<Map>> downloads = ValueNotifier([]);
   ValueNotifier<Map<String, Map>> downloadsByPlaylist = ValueNotifier({});
   final Map<String, ValueNotifier<double>> _activeDownloadProgress = {};
-  static const String songsPlaylistId = 'songs';
+  static const String songsPlaylistId = 'SNGS';
   final int maxConcurrentDownloads = 3; // Limit concurrent downloads
   final Queue<String> _activeDownloads =
       Queue<String>(); // Currently active downloads
@@ -66,7 +67,10 @@ class DownloadManager {
                 () => {
                       "id": id,
                       "title": title,
-                      "type": id == songsPlaylistId ? "SONGS" : "ALBUM",
+                      "type": id == songsPlaylistId ||
+                              id == FavouritesManager.playlistId
+                          ? "PLAYLIST"
+                          : "ALBUM",
                       "songs": [],
                     })['songs']
             .add({...song});

@@ -8,6 +8,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/utils/playlist_thumbnail.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
@@ -944,46 +945,35 @@ BottomModalLayout _songBottomModal(BuildContext context, Map song) {
               await GetIt.I<MediaPlayer>().addToQueue(Map.from(song));
             },
           ),
-          ValueListenableBuilder(
-            valueListenable: Hive.box('FAVOURITES').listenable(),
-            builder: (context, value, child) {
-              Map? item = value.get(song['videoId']);
+          ListenableBuilder(
+            listenable: GetIt.I<FavouritesManager>().listenable,
+            builder: (context, child) {
+              bool isFavorite = GetIt.I<FavouritesManager>().isFavourite(song);
               return AdaptiveListTile(
                 dense: true,
-                title: Text(item == null
+                title: Text(!isFavorite
                     ? S.of(context).Add_To_Favourites
                     : S.of(context).Remove_From_Favourites),
-                leading: Icon(item == null
+                leading: Icon(!isFavorite
                     ? AdaptiveIcons.heart
                     : AdaptiveIcons.heart_fill),
                 onTap: () async {
                   Navigator.pop(context);
-                  if (item == null) {
-                    await Hive.box('FAVOURITES').put(
-                      song['videoId'],
-                      {
-                        ...song,
-                        'createdAt': DateTime.now().millisecondsSinceEpoch
-                      },
-                    );
-                  } else {
-                    await value.delete(song['videoId']);
-                  }
+                  GetIt.I<FavouritesManager>().addOrRemove(song);
                 },
               );
             },
           ),
-          if (!['DOWNLOADING', 'DOWNLOADED'].contains(song['status']))
-            AdaptiveListTile(
-              dense: true,
-              title: Text(S.of(context).Download),
-              leading: Icon(AdaptiveIcons.download),
-              onTap: () {
-                Navigator.pop(context);
-                BottomMessage.showText(context, S.of(context).Download_Started);
-                GetIt.I<DownloadManager>().downloadSong(song);
-              },
-            ),
+          AdaptiveListTile(
+            dense: true,
+            title: Text(S.of(context).Download),
+            leading: Icon(AdaptiveIcons.download),
+            onTap: () {
+              Navigator.pop(context);
+              BottomMessage.showText(context, S.of(context).Download_Started);
+              GetIt.I<DownloadManager>().downloadSong(song);
+            },
+          ),
           AdaptiveListTile(
             dense: true,
             title: Text(S.of(context).Add_To_Playlist),
@@ -1358,7 +1348,9 @@ BottomModalLayout _downloadDetailsBottomModal(
       contentPadding: EdgeInsets.zero,
       title:
           Text(playlist['title'], maxLines: 1, overflow: TextOverflow.ellipsis),
-      leading: (playlist['songs']?.length > 0 && playlist['type'] != "SONGS")
+      leading: (playlist['songs']?.length > 0 &&
+              playlist['id'] != DownloadManager.songsPlaylistId &&
+              playlist['id'] != FavouritesManager.playlistId)
           ? (playlist['type'] == "ALBUM")
               ? PlaylistThumbnail(
                   playslist: [playlist['songs'][0]], size: 50, radius: 8)
@@ -1372,7 +1364,9 @@ BottomModalLayout _downloadDetailsBottomModal(
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
-                CupertinoIcons.music_note_list,
+                playlist['id'] == FavouritesManager.playlistId
+                    ? AdaptiveIcons.heart_fill
+                    : CupertinoIcons.music_note_list,
                 color: context.isDarkMode ? Colors.white : Colors.black,
               ),
             ),

@@ -7,6 +7,7 @@ import 'package:flutter_swipe_action_cell/core/cell.dart';
 import 'package:get_it/get_it.dart';
 import 'package:gyawun/screens/saved_screen/custom_playlist_header.dart';
 import 'package:gyawun/services/download_manager.dart';
+import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/utils/song_thumbnail.dart';
 
 import '../../generated/l10n.dart';
@@ -68,11 +69,15 @@ class _DownloadDetailsScreenState extends State<DownloadDetailsScreen> {
           final List songs = playlist['songs'] ?? [];
           return AdaptiveScaffold(
             appBar: AdaptiveAppBar(
-              title: playlist.isNotEmpty && playlist['type'] == 'SONGS'
+              title: playlist.isNotEmpty &&
+                      playlist['id'] == DownloadManager.songsPlaylistId
                   ? Text(S.of(context).Songs)
-                  : playlist.isNotEmpty
-                      ? Text(playlist['title'])
-                      : null,
+                  : playlist.isNotEmpty &&
+                          playlist['id'] == FavouritesManager.playlistId
+                      ? Text(S.of(context).Favourites)
+                      : playlist.isNotEmpty
+                          ? Text(playlist['title'])
+                          : null,
               centerTitle: true,
             ),
             body: playlist.isNotEmpty
@@ -89,9 +94,13 @@ class _DownloadDetailsScreenState extends State<DownloadDetailsScreen> {
                                   playlist: playlist,
                                   bottomModal:
                                       Modals.showDownloadDetailsBottomModal,
-                                  icon: playlist['type'] == 'SONGS'
+                                  icon: playlist['id'] ==
+                                          DownloadManager.songsPlaylistId
                                       ? CupertinoIcons.music_note_list
-                                      : null,
+                                      : playlist['id'] ==
+                                              FavouritesManager.playlistId
+                                          ? AdaptiveIcons.heart_fill
+                                          : null,
                                 ),
                                 const SizedBox(height: 8),
                               ],

@@ -11,9 +11,8 @@ import '../../utils/bottom_modals.dart';
 import '../../utils/extensions.dart';
 
 class LibraryTile extends StatelessWidget {
-  const LibraryTile({required this.songs, required this.index, super.key});
-  final List songs;
-  final int index;
+  const LibraryTile({required this.song, super.key});
+  final Map song;
 
   String _buildSubtitle(Map item) {
     List sub = [];
@@ -31,14 +30,13 @@ class LibraryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map song = songs[index];
     List thumbnails = song['thumbnails'];
     double height =
         (song['aspectRatio'] != null ? 50 / song['aspectRatio'] : 50)
             .toDouble();
     return AdaptiveListTile(
       onTap: () async {
-        await GetIt.I<MediaPlayer>().playAll(List.from(songs), index: index);
+        await GetIt.I<MediaPlayer>().playSong(Map.from(song));
       },
       onSecondaryTap: () {
         if (song['videoId'] != null) {

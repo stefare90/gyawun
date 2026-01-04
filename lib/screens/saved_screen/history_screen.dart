@@ -45,6 +45,8 @@ class HistoryScreen extends StatelessWidget {
                             ).then((bool confirm) async {
                               if (confirm) {
                                 await box.delete(song['videoId']);
+                              } else {
+                                handler(false);
                               }
                             });
                           },

@@ -132,6 +132,8 @@ class _DownloadDetailsScreenState extends State<DownloadDetailsScreen> {
                                                 .then((message) =>
                                                     BottomMessage.showText(
                                                         context, message));
+                                          } else {
+                                            handler(false);
                                           }
                                         });
                                       },

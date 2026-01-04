@@ -65,6 +65,8 @@ class PlaylistDetailsScreen extends StatelessWidget {
                                             .then((message) =>
                                                 BottomMessage.showText(
                                                     context, message));
+                                      } else {
+                                        handler(false);
                                       }
                                     });
                                   },

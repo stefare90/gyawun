@@ -543,7 +543,9 @@ BottomModalLayout _addToPlaylist(BuildContext context, Map item) {
           ...context.read<LibraryService>().userPlaylists.map((key, playlist) {
             return MapEntry(
               key,
-              playlist['songs'].contains(item)
+              playlist['songs']
+                      .map((song) => song["videoId"])
+                      .contains(item["videoId"])
                   ? const SizedBox.shrink()
                   : AdaptiveListTile(
                       dense: true,

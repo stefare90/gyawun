@@ -170,23 +170,27 @@ class DownloadedSongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double height =
+    final Map cleanSong = {...song}
+      ..remove("playlists")
+      ..remove("status")
+      ..remove("path");
+    final double height =
         (song['aspectRatio'] != null ? 50 / song['aspectRatio'] : 50)
             .toDouble();
     return AdaptiveListTile(
       onTap: () async {
         if (song['videoId'] != null && song['status'] == 'DOWNLOADED') {
-          await GetIt.I<MediaPlayer>().playSong(Map.from(song));
+          await GetIt.I<MediaPlayer>().playSong(Map.from(cleanSong));
         }
       },
       onSecondaryTap: () {
         if (song['videoId'] != null && song['status'] == 'DOWNLOADED') {
-          Modals.showSongBottomModal(context, song);
+          Modals.showSongBottomModal(context, cleanSong);
         }
       },
       onLongPress: () {
         if (song['videoId'] != null && song['status'] == 'DOWNLOADED') {
-          Modals.showSongBottomModal(context, song);
+          Modals.showSongBottomModal(context, cleanSong);
         }
       },
       title: Text(song['title'] ?? "", maxLines: 1),

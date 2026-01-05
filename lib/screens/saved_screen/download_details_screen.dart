@@ -54,7 +54,7 @@ class _DownloadDetailsScreenState extends State<DownloadDetailsScreen> {
       final exists = await file.exists();
       final status = song['status'];
 
-      if (!exists && status != 'DELETED') {
+      if (!exists && status == 'DOWNLOADED') {
         await manager.updateStatus(song['videoId'], 'DELETED');
       }
     }

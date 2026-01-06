@@ -93,43 +93,43 @@ class Lyrics {
     }
     return lyric;
   }
-}
 
-Future<String?> translateSyncLyrics(
-    String lyric, String from, String to) async {
-  try {
-    Translation trans = await lyric.translate(from: from, to: to);
-    final transLines = trans.text.split("\n");
-    final lyricLines = lyric.split("\n");
-    if (lyricLines.length != transLines.length) {
-      throw Exception("Translation lines do not match original lines");
+  Future<String?> translateSyncLyrics(
+      String lyric, String from, String to) async {
+    try {
+      Translation trans = await lyric.translate(from: from, to: to);
+      final transLines = trans.text.split("\n");
+      final lyricLines = lyric.split("\n");
+      if (lyricLines.length != transLines.length) {
+        throw Exception("Translation lines do not match original lines");
+      }
+      String transLyric = "";
+      for (int i = 0; i < transLines.length; i++) {
+        transLyric +=
+            "${lyricLines[i].split("]")[0]}]${transLines[i].split("]")[1]}\n";
+      }
+      return transLyric;
+    } catch (e) {
+      return "";
     }
-    String transLyric = "";
-    for (int i = 0; i < transLines.length; i++) {
-      transLyric +=
-          "${lyricLines[i].split("]")[0]}]${transLines[i].split("]")[1]}\n";
-    }
-    return transLyric;
-  } catch (e) {
-    return "";
   }
-}
 
-Future<String?> translatePlainLyrics(
-    String lyric, String from, String to) async {
-  try {
-    Translation trans = await lyric.translate(from: from, to: to);
-    final lines = lyric.split("\n");
-    final transLines = trans.text.split("\n");
-    if (lines.length != transLines.length) {
-      throw Exception("Translation lines do not match original lines");
+  Future<String?> translatePlainLyrics(
+      String lyric, String from, String to) async {
+    try {
+      Translation trans = await lyric.translate(from: from, to: to);
+      final lines = lyric.split("\n");
+      final transLines = trans.text.split("\n");
+      if (lines.length != transLines.length) {
+        throw Exception("Translation lines do not match original lines");
+      }
+      String transLyric = '';
+      for (int i = 0; i < lines.length; i++) {
+        transLyric += "${lines[i]}\n[${transLines[i]}]\n\n";
+      }
+      return transLyric;
+    } catch (e) {
+      return "";
     }
-    String transLyric = '';
-    for (int i = 0; i < lines.length; i++) {
-      transLyric += "${lines[i]}\n[${transLines[i]}]\n\n";
-    }
-    return transLyric;
-  } catch (e) {
-    return "";
   }
 }

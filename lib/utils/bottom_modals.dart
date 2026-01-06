@@ -1318,18 +1318,7 @@ BottomModalLayout _downloadBottomModal(BuildContext context) {
               if (shouldDelete) {
                 Navigator.pop(context);
                 BottomMessage.showText(context, S.of(context).Deleting_Songs);
-                List songs = Hive.box('DOWNLOADS').values.toList();
-                for (var song in songs) {
-                  await Hive.box('DOWNLOADS').delete(song['videoId']);
-                  if (song.containsKey('path')) {
-                    String path = song['path'];
-                    try {
-                      File(path).delete();
-                    } catch (e) {
-                      debugPrint(e.toString());
-                    }
-                  }
-                }
+                await GetIt.I<DownloadManager>().deleteAllSongs();
               }
             },
           ),
@@ -1425,7 +1414,6 @@ BottomModalLayout _downloadDetailsBottomModal(
                     for (var song in playlist['songs']) {
                       await GetIt.I<DownloadManager>().deleteSong(
                         key: song['videoId'],
-                        path: song['path'],
                         playlistId: playlist['id'],
                       );
                     }

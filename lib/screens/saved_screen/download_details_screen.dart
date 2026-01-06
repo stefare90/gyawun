@@ -126,7 +126,6 @@ class _DownloadDetailsScreenState extends State<DownloadDetailsScreen> {
                                             GetIt.I<DownloadManager>()
                                                 .deleteSong(
                                                   key: song['videoId'],
-                                                  path: song['path'],
                                                   playlistId: widget.playlistId,
                                                 )
                                                 .then((message) =>

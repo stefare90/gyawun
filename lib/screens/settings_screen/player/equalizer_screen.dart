@@ -92,25 +92,22 @@ class EqualizerControls extends StatelessWidget {
         if (parameters == null) return const SizedBox();
 
         return ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
+          constraints: const BoxConstraints(
+            maxWidth: 400,
+            maxHeight: 300,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
               for (var band in parameters['bands'])
                 Expanded(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: VerticalSlider(
-                          min: parameters['minDecibels'],
-                          max: parameters['maxDecibels'],
-                          value: band['gain'],
-                          bandIndex: band['index'] as int,
-                          disabled: disabled,
-                          centerFrequency: band['centerFrequency'].round(),
-                        ),
-                      ),
-                    ],
+                  child: VerticalSlider(
+                    min: parameters['minDecibels'],
+                    max: parameters['maxDecibels'],
+                    value: band['gain'],
+                    bandIndex: band['index'] as int,
+                    disabled: disabled,
+                    centerFrequency: band['centerFrequency'].round(),
                   ),
                 ),
             ],
@@ -193,9 +190,9 @@ class _VerticalSliderState extends State<VerticalSlider> {
 Future<Map> getEqParms() async {
   AndroidEqualizerParameters equalizerParams =
       await GetIt.I<AndroidEqualizer>().parameters;
-  
+
   final List<AndroidEqualizerBand> bands = equalizerParams.bands;
-  
+
   final List<Map> bandList = bands
       .map(
         (e) => {

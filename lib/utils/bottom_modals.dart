@@ -10,7 +10,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/utils/playlist_thumbnail.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:gyawun/utils/text_controller_builder.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -169,15 +169,13 @@ class Modals {
   }
 
   static void showCreateplaylistModal(BuildContext context, {Map? item}) {
-    String title = '';
-
     showModalBottomSheet(
       useRootNavigator: false,
       backgroundColor: Colors.transparent,
       useSafeArea: true,
       isScrollControlled: true,
       context: context,
-      builder: (context) => _createPlaylistModal(title, context, item),
+      builder: (context) => _createPlaylistModal(context, item),
     );
   }
 
@@ -401,46 +399,47 @@ BottomModalLayout _artistsBottomModal(
       ));
 }
 
-Widget _createPlaylistModal(
-    String title, BuildContext context, Map<dynamic, dynamic>? item) {
-  return BottomModalLayout(
-    title: Center(
-        child: Text(
-      S.of(context).Create_Playlist,
-      style: mediumTextStyle(context),
-    )),
-    actions: [
-      AdaptiveButton(
-        onPressed: () async {
-          Navigator.pop(context);
-        },
-        child: Text(S.of(context).Cancel),
-      ),
-      AdaptiveFilledButton(
-        color: Theme.of(context).colorScheme.primary,
-        onPressed: () async {
-          context
-              .read<LibraryService>()
-              .createPlaylist(title, item: item)
-              .then((String message) {
-            Navigator.pop(context);
-            BottomMessage.showText(context, message);
-          });
-        },
-        child: Text(
-          S.of(context).Create,
-          style: TextStyle(
-              color: context.isDarkMode ? Colors.black : Colors.white),
-        ),
-      )
-    ],
-    child: SingleChildScrollView(
-      child: Column(
-        children: [
-          Column(
+Widget _createPlaylistModal(BuildContext context, Map<dynamic, dynamic>? item) {
+  return TextControllerBuilder(
+    builder: (context, controller) {
+      return Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: BottomModalLayout(
+          title: Center(
+              child: Text(
+            S.of(context).Create_Playlist,
+            style: mediumTextStyle(context),
+          )),
+          actions: [
+            AdaptiveButton(
+              onPressed: () async {
+                Navigator.pop(context);
+              },
+              child: Text(S.of(context).Cancel),
+            ),
+            AdaptiveFilledButton(
+              color: Theme.of(context).colorScheme.primary,
+              onPressed: () async {
+                context
+                    .read<LibraryService>()
+                    .createPlaylist(controller.text, item: item)
+                    .then((String message) {
+                  Navigator.pop(context);
+                  BottomMessage.showText(context, message);
+                });
+              },
+              child: Text(
+                S.of(context).Create,
+                style: TextStyle(
+                    color: context.isDarkMode ? Colors.black : Colors.white),
+              ),
+            )
+          ],
+          child: Column(
             children: [
               AdaptiveTextField(
-                onChanged: (value) => title = value,
+                controller: controller,
                 fillColor: Platform.isAndroid ? greyColor : null,
                 hintText: S.of(context).Playlist_Name,
                 prefix: Padding(
@@ -451,9 +450,9 @@ Widget _createPlaylistModal(
               ),
             ],
           ),
-        ],
-      ),
-    ),
+        ),
+      );
+    },
   );
 }
 
@@ -1498,12 +1497,31 @@ class BottomModalLayout extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurfaceVariant
+                          .withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
                 if (title != null)
                   Padding(
                       padding: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 0),
                       child: title!),
-                child,
+                Flexible(
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    child: child,
+                  ),
+                ),
                 if (actions != null)
                   Padding(
                     padding:

@@ -169,6 +169,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       ),
                     ),
                     child: Scaffold(
+                      resizeToAvoidBottomInset: false,
                       appBar: PreferredSize(
                         preferredSize: AppBar().preferredSize,
                         child: AppBar(
@@ -219,7 +220,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         width: double.maxFinite,
                         child: LayoutBuilder(
                           builder: (context, constraints) {
-                            EdgeInsets padding = MediaQuery.of(context).padding;
+                            EdgeInsets padding =
+                                MediaQuery.of(context).viewPadding;
                             double maxWidth = constraints.maxWidth -
                                 padding.left -
                                 padding.right;
@@ -283,7 +285,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                   ),
                                   boxShadow: const [],
                                   minHeight: 50 +
-                                      MediaQuery.of(context).padding.bottom,
+                                      MediaQuery.of(context).viewPadding.bottom,
                                   panel: ClipRRect(
                                     borderRadius: const BorderRadius.only(
                                         topLeft: Radius.circular(20),
@@ -308,7 +310,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                               child: Container(
                                                 height: 50 +
                                                     MediaQuery.of(context)
-                                                        .padding
+                                                        .viewPadding
                                                         .bottom,
                                                 width: double.maxFinite,
                                                 decoration: BoxDecoration(
@@ -397,7 +399,8 @@ class Artwork extends StatelessWidget {
                 Icons.music_note,
                 size: width * 0.5,
               )
-            : SafeArea(
+            : Padding(
+                padding: MediaQuery.of(context).viewPadding,
                 child: LayoutBuilder(builder: (context, constraints) {
                   return GestureDetector(
                     onTap: () {
@@ -617,7 +620,7 @@ class NameAndControls extends StatelessWidget {
               ],
             ),
             if (song != null && !isRow)
-              SizedBox(height: 55 + MediaQuery.of(context).padding.bottom)
+              SizedBox(height: 55 + MediaQuery.of(context).viewPadding.bottom)
           ],
         ),
       ),

@@ -30,6 +30,14 @@ extension DarkMode on BuildContext {
       : Colors.white;
 }
 
+extension LayoutExtensions on BuildContext {
+  bool get isKeyboardSpaceLimited {
+    final mediaQuery = MediaQuery.of(this);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    return isLandscape && mediaQuery.size.height < 450;
+  }
+}
+
 extension StringMani on String {
   String get breakWord {
     String breakWord = '';

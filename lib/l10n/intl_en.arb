@@ -271,5 +271,7 @@
   "FileNotFound": "File not found",
   "@FileNotFound": {},
   "PlayAll": "Play All",
-  "@PlayAll": {}
+  "@PlayAll": {},
+  "Rotate_device": "Rotate your device to type.",
+  "@Rotate_device": {}
 }

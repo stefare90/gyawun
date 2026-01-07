@@ -298,56 +298,70 @@ BottomModalLayout _confirmBottomModal(
   );
 }
 
-BottomModalLayout _playlistRenameBottomModal(BuildContext context,
+Widget _playlistRenameBottomModal(BuildContext context,
     {String? name, required String playlistId}) {
-  TextEditingController controller = TextEditingController();
-  controller.text = name ?? '';
-  return BottomModalLayout(
-      title: Center(
-        child: Text(
-          S.of(context).Rename_Playlist,
-          style: mediumTextStyle(context),
-        ),
-      ),
-      actions: [
-        AdaptiveFilledButton(
-          onPressed: () async {
-            String text = controller.text;
-            context
-                .read<LibraryService>()
-                .renamePlaylist(
-                    playlistId: playlistId,
-                    title: text.trim().isNotEmpty ? text : null)
-                .then((String message) {
-              Navigator.pop(context);
-              BottomMessage.showText(context, message);
-            });
-          },
-          child: Text(S.of(context).Rename),
-        )
-      ],
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-              child: Column(
-                children: [
-                  AdaptiveTextField(
-                    controller: controller,
-                    fillColor: greyColor,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
-                    hintText: S.of(context).Playlist_Name,
-                    prefix: const Icon(Icons.title),
-                  ),
-                ],
-              ),
+  final bool blockInput = context.isKeyboardSpaceLimited;
+  return TextControllerBuilder(
+    initialText: name,
+    builder: (context, controller) {
+      return BottomModalLayout(
+          title: Center(
+            child: Text(
+              S.of(context).Rename_Playlist,
+              style: mediumTextStyle(context),
+            ),
+          ),
+          actions: [
+            AdaptiveFilledButton(
+              onPressed: () async {
+                String text = controller.text;
+                context
+                    .read<LibraryService>()
+                    .renamePlaylist(
+                        playlistId: playlistId,
+                        title: text.trim().isNotEmpty ? text : null)
+                    .then((String message) {
+                  Navigator.pop(context);
+                  BottomMessage.showText(context, message);
+                });
+              },
+              child: Text(S.of(context).Rename),
             )
           ],
-        ),
-      ));
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 16),
+                  child: Column(
+                    children: [
+                      AdaptiveTextField(
+                        controller: controller,
+                        fillColor: greyColor,
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 2, horizontal: 16),
+                        hintText: S.of(context).Playlist_Name,
+                        prefix: const Icon(Icons.title),
+                        readOnly: blockInput,
+                        onTap: () {
+                          if (blockInput) {
+                            FocusScope.of(context).unfocus();
+                            BottomMessage.showText(
+                              context,
+                              S.of(context).Rotate_device,
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ));
+    },
+  );
 }
 
 BottomModalLayout _artistsBottomModal(
@@ -402,6 +416,7 @@ BottomModalLayout _artistsBottomModal(
 Widget _createPlaylistModal(BuildContext context, Map<dynamic, dynamic>? item) {
   return TextControllerBuilder(
     builder: (context, controller) {
+      final bool blockInput = context.isKeyboardSpaceLimited;
       return Padding(
         padding:
             EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -447,6 +462,16 @@ Widget _createPlaylistModal(BuildContext context, Map<dynamic, dynamic>? item) {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: Icon(Icons.title),
                 ),
+                readOnly: blockInput,
+                onTap: () {
+                  if (blockInput) {
+                    FocusScope.of(context).unfocus();
+                    BottomMessage.showText(
+                      context,
+                      S.of(context).Rotate_device,
+                    );
+                  }
+                },
               ),
             ],
           ),
@@ -457,63 +482,77 @@ Widget _createPlaylistModal(BuildContext context, Map<dynamic, dynamic>? item) {
 }
 
 Widget _importPlaylistModal(BuildContext context) {
-  String title = '';
-  return BottomModalLayout(
-    title: Center(
-      child: Text(
-        S.of(context).Import_Playlist,
-        style: mediumTextStyle(context),
-      ),
-    ),
-    actions: [
-      AdaptiveButton(
-        onPressed: () async {
-          Navigator.pop(context);
-        },
-        child: Text(S.of(context).Cancel),
-      ),
-      AdaptiveFilledButton(
-        color: Theme.of(context).colorScheme.primary,
-        onPressed: () async {
-          Modals.showCenterLoadingModal(context);
-          String message =
-              await GetIt.I<LibraryService>().importPlaylist(title);
-          if (context.mounted) {
-            Navigator.pop(context);
-            Navigator.pop(context);
-            BottomMessage.showText(context, message);
-          }
-        },
-        child: Text(
-          S.of(context).Import,
-          style: TextStyle(
-              color: context.isDarkMode ? Colors.black : Colors.white),
+  final bool blockInput = context.isKeyboardSpaceLimited;
+  return TextControllerBuilder(
+    builder: (context, controller) {
+      return BottomModalLayout(
+        title: Center(
+          child: Text(
+            S.of(context).Import_Playlist,
+            style: mediumTextStyle(context),
+          ),
         ),
-      )
-    ],
-    child: SingleChildScrollView(
-      child: Column(
-        children: [
-          Column(
+        actions: [
+          AdaptiveButton(
+            onPressed: () async {
+              Navigator.pop(context);
+            },
+            child: Text(S.of(context).Cancel),
+          ),
+          AdaptiveFilledButton(
+            color: Theme.of(context).colorScheme.primary,
+            onPressed: () async {
+              Modals.showCenterLoadingModal(context);
+              String message = await GetIt.I<LibraryService>()
+                  .importPlaylist(controller.text);
+              if (context.mounted) {
+                Navigator.pop(context);
+                Navigator.pop(context);
+                BottomMessage.showText(context, message);
+              }
+            },
+            child: Text(
+              S.of(context).Import,
+              style: TextStyle(
+                  color: context.isDarkMode ? Colors.black : Colors.white),
+            ),
+          )
+        ],
+        child: SingleChildScrollView(
+          child: Column(
             children: [
-              AdaptiveTextField(
-                onChanged: (value) => title = value,
-                keyboardType: TextInputType.url,
-                hintText: 'https://music.youtube.com/playlist?list=',
-                prefix: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Icon(Icons.title),
-                ),
-                fillColor: Platform.isWindows ? null : greyColor,
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
+              Column(
+                children: [
+                  AdaptiveTextField(
+                    controller: controller,
+                    keyboardType: TextInputType.url,
+                    hintText: 'https://music.youtube.com/playlist?list=',
+                    prefix: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Icon(Icons.title),
+                    ),
+                    fillColor: Platform.isWindows ? null : greyColor,
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
+                    readOnly: blockInput,
+                    onTap: () {
+                      if (blockInput) {
+                        FocusScope.of(context).unfocus();
+                        BottomMessage.showText(
+                          context,
+                          S.of(context).Rotate_device,
+                        );
+                      }
+                    },
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-    ),
+        ),
+      );
+    },
   );
 }
 
@@ -670,48 +709,63 @@ SizedBox _updateDialog(BuildContext context, UpdateInfo? updateInfo) {
   );
 }
 
-BottomModalLayout _textFieldBottomModal(BuildContext context,
+Widget _textFieldBottomModal(BuildContext context,
     {String? title, String? hintText, String? doneText}) {
-  String? text;
-  return BottomModalLayout(
-    title: (title != null)
-        ? Center(
-            child: Text(
-              title,
-              style: mediumTextStyle(context),
-            ),
-          )
-        : null,
-    actions: [
-      AdaptiveFilledButton(
-        onPressed: () async {
-          Navigator.pop(context, text);
-        },
-        child: Text(doneText ?? S.of(context).Done),
-      )
-    ],
-    child: SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Column(
-              children: [
-                AdaptiveTextField(
-                  onChanged: (value) => text = value,
-                  fillColor: greyColor,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
-                  hintText: hintText,
-                  prefix: const Icon(Icons.title),
+  final bool blockInput = context.isKeyboardSpaceLimited;
+  return TextControllerBuilder(
+    builder: (context, controller) {
+      return BottomModalLayout(
+        title: (title != null)
+            ? Center(
+                child: Text(
+                  title,
+                  style: mediumTextStyle(context),
                 ),
-              ],
-            ),
-          ),
+              )
+            : null,
+        actions: [
+          AdaptiveFilledButton(
+            onPressed: () async {
+              Navigator.pop(context, controller.text);
+            },
+            child: Text(doneText ?? S.of(context).Done),
+          )
         ],
-      ),
-    ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: Column(
+                  children: [
+                    AdaptiveTextField(
+                      controller: controller,
+                      fillColor: greyColor,
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 2, horizontal: 16),
+                      hintText: hintText,
+                      prefix: const Icon(Icons.title),
+                      readOnly: blockInput,
+                      onTap: () {
+                        if (blockInput) {
+                          FocusScope.of(context).unfocus();
+                          BottomMessage.showText(
+                            context,
+                            S.of(context).Rotate_device,
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
   );
 }
 

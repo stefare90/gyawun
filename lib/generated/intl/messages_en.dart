@@ -211,6 +211,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Restoring Missing Songs...",
     ),
     "Retry": MessageLookupByLibrary.simpleMessage("Retry"),
+    "Rotate_device": MessageLookupByLibrary.simpleMessage(
+      "Rotate your device to type.",
+    ),
     "Save": MessageLookupByLibrary.simpleMessage("Save"),
     "Saved": MessageLookupByLibrary.simpleMessage("Saved"),
     "Search_Gyawun": MessageLookupByLibrary.simpleMessage("Search Gyawun"),

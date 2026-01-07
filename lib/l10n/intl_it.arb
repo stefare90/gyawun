@@ -271,5 +271,7 @@
   "FileNotFound": "File non trovato",
   "@FileNotFound": {},
   "PlayAll": "Riproduci",
-  "@PlayAll": {}
+  "@PlayAll": {},
+  "Rotate_device": "Ruota il dispositivo per scrivere.",
+  "@Rotate_device": {}
 }

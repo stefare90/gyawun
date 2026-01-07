@@ -1081,6 +1081,16 @@ class S {
   String get PlayAll {
     return Intl.message('Play All', name: 'PlayAll', desc: '', args: []);
   }
+
+  /// `Rotate your device to type.`
+  String get Rotate_device {
+    return Intl.message(
+      'Rotate your device to type.',
+      name: 'Rotate_device',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

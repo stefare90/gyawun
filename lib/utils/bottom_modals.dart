@@ -1512,10 +1512,15 @@ class BottomModalLayout extends StatelessWidget {
                   ),
                 ),
                 if (title != null)
-                  Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 0),
-                      child: title!),
+                  Column(
+                    children: [
+                      Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 0),
+                          child: title!),
+                      const Divider(),
+                    ],
+                  ),
                 Flexible(
                   child: SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),

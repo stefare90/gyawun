@@ -11,6 +11,7 @@ import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/services/file_storage.dart';
 import 'package:gyawun/services/library.dart';
 import 'package:gyawun/services/settings_manager.dart';
+import 'package:gyawun/themes/text_styles.dart';
 import 'package:gyawun/utils/bottom_modals.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -108,8 +109,11 @@ class BackupStorageScreen extends StatelessWidget {
 Future<void> _backup(BuildContext context) async {
   String? action;
   List? items;
-  (action, items) = await showCupertinoModalPopup(
+  (String?, List?)? response = await showModalBottomSheet(
       useRootNavigator: false,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      isScrollControlled: true,
       context: context,
       builder: (context) {
         ValueNotifier<List<Map<String, dynamic>>> items = ValueNotifier([
@@ -120,89 +124,85 @@ Future<void> _backup(BuildContext context) async {
           {'name': 'Downloads', 'selected': false}
         ]);
         return BottomModalLayout(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppBar(
-                  title: Text(S.of(context).Select_Backup),
-                  centerTitle: true,
-                  automaticallyImplyLeading: false,
-                ),
-                const Divider(),
-                ValueListenableBuilder(
-                  valueListenable: items,
-                  builder: (context, backups, child) {
-                    return Column(
-                        children: backups.indexed.map((el) {
-                      int index = el.$1;
-                      Map<String, dynamic> element = el.$2;
-                      return CheckboxListTile(
-                        title: Text(element['name']),
-                        value: element['selected'],
-                        onChanged: (val) {
-                          List<Map<String, dynamic>> newItems =
-                              List.from(items.value);
-                          newItems[index]['selected'] = val;
-                          items.value = newItems;
-                        },
-                      );
-                    }).toList());
-                  },
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    spacing: 20,
-                    children: [
-                      MaterialButton(
-                        onPressed: () {
-                          List finalItems = items.value
-                              .where((el) => el['selected'] == true)
-                              .map((el) => el['name'].toLowerCase())
-                              .toList();
-                          context.pop(finalItems.isEmpty
-                              ? (null, null)
-                              : ("Share", finalItems));
-                        },
-                        color: Theme.of(context).colorScheme.primary,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Text(
-                          S.of(context).Share,
-                          style: TextStyle(
-                              color: Theme.of(context).scaffoldBackgroundColor),
-                        ),
+          title: Text(S.of(context).Select_Backup,
+              style: mediumTextStyle(context)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ValueListenableBuilder(
+                valueListenable: items,
+                builder: (context, backups, child) {
+                  return Column(
+                      children: backups.indexed.map((el) {
+                    int index = el.$1;
+                    Map<String, dynamic> element = el.$2;
+                    return CheckboxListTile(
+                      title: Text(element['name']),
+                      value: element['selected'],
+                      onChanged: (val) {
+                        List<Map<String, dynamic>> newItems =
+                            List.from(items.value);
+                        newItems[index]['selected'] = val;
+                        items.value = newItems;
+                      },
+                    );
+                  }).toList());
+                },
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 20,
+                  children: [
+                    MaterialButton(
+                      onPressed: () {
+                        List finalItems = items.value
+                            .where((el) => el['selected'] == true)
+                            .map((el) => el['name'].toLowerCase())
+                            .toList();
+                        context.pop(finalItems.isEmpty
+                            ? (null, null)
+                            : ("Share", finalItems));
+                      },
+                      color: Theme.of(context).colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      child: Text(
+                        S.of(context).Share,
+                        style: TextStyle(
+                            color: Theme.of(context).scaffoldBackgroundColor),
                       ),
-                      MaterialButton(
-                        onPressed: () {
-                          List finalItems = items.value
-                              .where((el) => el['selected'] == true)
-                              .map((el) => el['name'].toLowerCase())
-                              .toList();
-                          context.pop(finalItems.isEmpty
-                              ? (null, null)
-                              : ("Save", finalItems));
-                        },
-                        color: Theme.of(context).colorScheme.primary,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Text(
-                          S.of(context).Save,
-                          style: TextStyle(
-                              color: Theme.of(context).scaffoldBackgroundColor),
-                        ),
-                      )
-                    ],
-                  ),
-                )
-              ],
-            ),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
+                        List finalItems = items.value
+                            .where((el) => el['selected'] == true)
+                            .map((el) => el['name'].toLowerCase())
+                            .toList();
+                        context.pop(finalItems.isEmpty
+                            ? (null, null)
+                            : ("Save", finalItems));
+                      },
+                      color: Theme.of(context).colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      child: Text(
+                        S.of(context).Save,
+                        style: TextStyle(
+                            color: Theme.of(context).scaffoldBackgroundColor),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
           ),
         );
       });
+  if (response == null) return;
+  (action, items) = response;
   if (action == null || items == null) {
     return;
   }

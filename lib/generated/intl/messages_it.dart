@@ -139,7 +139,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "Feature_Request": MessageLookupByLibrary.simpleMessage(
       "Richiesta funzionalità",
     ),
-    "FileNotFound": MessageLookupByLibrary.simpleMessage("File non trovato"),
+    "File_Not_Found": MessageLookupByLibrary.simpleMessage("File non trovato"),
     "Go_To_Downloads": MessageLookupByLibrary.simpleMessage("Vai a Download"),
     "Google_Account": MessageLookupByLibrary.simpleMessage("Account Google"),
     "Gyawun": MessageLookupByLibrary.simpleMessage("Gyawun"),
@@ -175,7 +175,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "Personalised_Content": MessageLookupByLibrary.simpleMessage(
       "Contenuti personalizzati",
     ),
-    "PlayAll": MessageLookupByLibrary.simpleMessage("Riproduci"),
+    "Play_All": MessageLookupByLibrary.simpleMessage("Riproduci"),
     "Play_Next": MessageLookupByLibrary.simpleMessage("Riproduci dopo"),
     "Playback_History_Deleted": MessageLookupByLibrary.simpleMessage(
       "Cronologia di riproduzione eliminata",
@@ -187,7 +187,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "Playlists": MessageLookupByLibrary.simpleMessage("Playlist"),
     "Progress": MessageLookupByLibrary.simpleMessage("Avanzamento"),
     "Queued": MessageLookupByLibrary.simpleMessage("In coda"),
-    "QueuedCount": m0,
+    "Queued_Count": m0,
     "Remove": MessageLookupByLibrary.simpleMessage("Rimuovi"),
     "Remove_All_History_Message": MessageLookupByLibrary.simpleMessage(
       "Sei sicuro di voler cancellare tutta la cronologia?",
@@ -225,7 +225,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Ripristino brani mancanti...",
     ),
     "Retry": MessageLookupByLibrary.simpleMessage("Riprova"),
-    "Rotate_device": MessageLookupByLibrary.simpleMessage(
+    "Rotate_Device": MessageLookupByLibrary.simpleMessage(
       "Ruota il dispositivo per scrivere.",
     ),
     "Save": MessageLookupByLibrary.simpleMessage("Salva"),
@@ -263,6 +263,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "Theme_Mode": MessageLookupByLibrary.simpleMessage("Tema"),
     "Translate_Lyrics": MessageLookupByLibrary.simpleMessage("Traduci testi"),
     "Version": MessageLookupByLibrary.simpleMessage("Versione"),
+    "View_Equalizer": MessageLookupByLibrary.simpleMessage(
+      "Riproduci un brano per vedere l\'equalizzatore.",
+    ),
     "Visitor_Id": MessageLookupByLibrary.simpleMessage("Visitor ID"),
     "Window_Effect": MessageLookupByLibrary.simpleMessage("Effetto finestra"),
     "YTMusic": MessageLookupByLibrary.simpleMessage("YTMusic"),

@@ -131,7 +131,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "Equalizer": MessageLookupByLibrary.simpleMessage("Equalizer"),
     "Favourites": MessageLookupByLibrary.simpleMessage("Favourites"),
     "Feature_Request": MessageLookupByLibrary.simpleMessage("Feature Request"),
-    "FileNotFound": MessageLookupByLibrary.simpleMessage("File not found"),
+    "File_Not_Found": MessageLookupByLibrary.simpleMessage("File not found"),
     "Go_To_Downloads": MessageLookupByLibrary.simpleMessage("Go to Downloads"),
     "Google_Account": MessageLookupByLibrary.simpleMessage("Google Account"),
     "Gyawun": MessageLookupByLibrary.simpleMessage("Gyawun"),
@@ -163,7 +163,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "Personalised_Content": MessageLookupByLibrary.simpleMessage(
       "Personalised Content",
     ),
-    "PlayAll": MessageLookupByLibrary.simpleMessage("Play All"),
+    "Play_All": MessageLookupByLibrary.simpleMessage("Play All"),
     "Play_Next": MessageLookupByLibrary.simpleMessage("Play Next"),
     "Playback_History_Deleted": MessageLookupByLibrary.simpleMessage(
       "Playback History Deleted",
@@ -175,7 +175,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "Playlists": MessageLookupByLibrary.simpleMessage("Playlists"),
     "Progress": MessageLookupByLibrary.simpleMessage("Progress"),
     "Queued": MessageLookupByLibrary.simpleMessage("Queued"),
-    "QueuedCount": m0,
+    "Queued_Count": m0,
     "Remove": MessageLookupByLibrary.simpleMessage("Remove"),
     "Remove_All_History_Message": MessageLookupByLibrary.simpleMessage(
       "Are you sure you want to clear all history?",
@@ -211,7 +211,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Restoring Missing Songs...",
     ),
     "Retry": MessageLookupByLibrary.simpleMessage("Retry"),
-    "Rotate_device": MessageLookupByLibrary.simpleMessage(
+    "Rotate_Device": MessageLookupByLibrary.simpleMessage(
       "Rotate your device to type.",
     ),
     "Save": MessageLookupByLibrary.simpleMessage("Save"),
@@ -249,6 +249,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Translate Lyrics",
     ),
     "Version": MessageLookupByLibrary.simpleMessage("Version"),
+    "View_Equalizer": MessageLookupByLibrary.simpleMessage(
+      "Play a song to see the equalizer.",
+    ),
     "Visitor_Id": MessageLookupByLibrary.simpleMessage("Visitor Id"),
     "Window_Effect": MessageLookupByLibrary.simpleMessage("Window Effect"),
     "YTMusic": MessageLookupByLibrary.simpleMessage("YTMusic"),

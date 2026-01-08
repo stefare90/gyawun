@@ -266,12 +266,14 @@
   "@In_Progress": {},
   "Queued": "Queued",
   "@Queued": {},
-  "QueuedCount": "Queued ({count})",
-  "@QueuedCount": {},
-  "FileNotFound": "File not found",
-  "@FileNotFound": {},
-  "PlayAll": "Play All",
-  "@PlayAll": {},
-  "Rotate_device": "Rotate your device to type.",
-  "@Rotate_device": {}
+  "Queued_Count": "Queued ({count})",
+  "@Queued_Count": {},
+  "File_Not_Found": "File not found",
+  "@File_Not_Found": {},
+  "Play_All": "Play All",
+  "@Play_All": {},
+  "Rotate_Device": "Rotate your device to type.",
+  "@Rotate_Device": {},
+  "View_Equalizer": "Play a song to see the equalizer.",
+  "@View_Equalizer": {}
 }

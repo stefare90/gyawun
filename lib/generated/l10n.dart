@@ -1058,35 +1058,45 @@ class S {
   }
 
   /// `Queued ({count})`
-  String QueuedCount(Object count) {
+  String Queued_Count(Object count) {
     return Intl.message(
       'Queued ($count)',
-      name: 'QueuedCount',
+      name: 'Queued_Count',
       desc: '',
       args: [count],
     );
   }
 
   /// `File not found`
-  String get FileNotFound {
+  String get File_Not_Found {
     return Intl.message(
       'File not found',
-      name: 'FileNotFound',
+      name: 'File_Not_Found',
       desc: '',
       args: [],
     );
   }
 
   /// `Play All`
-  String get PlayAll {
-    return Intl.message('Play All', name: 'PlayAll', desc: '', args: []);
+  String get Play_All {
+    return Intl.message('Play All', name: 'Play_All', desc: '', args: []);
   }
 
   /// `Rotate your device to type.`
-  String get Rotate_device {
+  String get Rotate_Device {
     return Intl.message(
       'Rotate your device to type.',
-      name: 'Rotate_device',
+      name: 'Rotate_Device',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Play a song to see the equalizer.`
+  String get View_Equalizer {
+    return Intl.message(
+      'Play a song to see the equalizer.',
+      name: 'View_Equalizer',
       desc: '',
       args: [],
     );

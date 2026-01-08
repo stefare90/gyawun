@@ -89,7 +89,7 @@ class CustomPlayistHeader extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        S.of(context).PlayAll,
+                        S.of(context).Play_All,
                         style: TextStyle(fontSize: 18),
                       )
                     ],

@@ -86,11 +86,21 @@ class EqualizerControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: getEqParms(),
+      future: GetIt.I<MediaPlayer>().getEqualizerParameters(),
       builder: (context, snapshot) {
         final parameters = snapshot.data;
-        if (parameters == null) return const SizedBox();
-
+        if (parameters == null) {
+          return SizedBox(
+            child: Text(
+              S.of(context).View_Equalizer,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey.withValues(alpha: 0.5),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          );
+        }
         return ConstrainedBox(
           constraints: const BoxConstraints(
             maxWidth: 400,
@@ -176,7 +186,8 @@ class _VerticalSliderState extends State<VerticalSlider> {
             onChanged: (val) {
               setState(() {
                 sliderValue = val;
-                setGain(widget.bandIndex, val);
+                GetIt.I<MediaPlayer>()
+                    .setEqualizerBandGain(widget.bandIndex, val);
               });
             },
           ),
@@ -185,34 +196,4 @@ class _VerticalSliderState extends State<VerticalSlider> {
       ],
     );
   }
-}
-
-Future<Map> getEqParms() async {
-  AndroidEqualizerParameters equalizerParams =
-      await GetIt.I<AndroidEqualizer>().parameters;
-
-  final List<AndroidEqualizerBand> bands = equalizerParams.bands;
-
-  final List<Map> bandList = bands
-      .map(
-        (e) => {
-          'centerFrequency': e.centerFrequency,
-          'gain': e.gain,
-          'index': e.index,
-        },
-      )
-      .toList();
-
-  return {
-    'maxDecibels': equalizerParams.maxDecibels,
-    'minDecibels': equalizerParams.minDecibels,
-    'bands': bandList
-  };
-}
-
-void setGain(int bandIndex, double gain) async {
-  await GetIt.I<SettingsManager>().setEqualizerBandsGain(bandIndex, gain);
-  AndroidEqualizerParameters params =
-      await GetIt.I<AndroidEqualizer>().parameters;
-  await params.bands[bandIndex].setGain(gain);
 }

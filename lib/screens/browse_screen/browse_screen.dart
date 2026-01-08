@@ -292,7 +292,7 @@ class _HeaderWidgetState extends State<HeaderWidget> {
                             size: 26,
                           ),
                           const SizedBox(width: 8),
-                          Text(S.of(context).PlayAll,
+                          Text(S.of(context).Play_All,
                               style: TextStyle(fontSize: 18))
                         ],
                       ),

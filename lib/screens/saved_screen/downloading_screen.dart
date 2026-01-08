@@ -42,7 +42,7 @@ class DownloadingScreen extends StatelessWidget {
                   SliverToBoxAdapter(
                       child: SectionTitle(
                           title:
-                              S.of(context).QueuedCount(queuedSongs.length))),
+                              S.of(context).Queued_Count(queuedSongs.length))),
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) =>

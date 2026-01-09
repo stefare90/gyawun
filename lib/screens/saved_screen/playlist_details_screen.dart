@@ -18,9 +18,15 @@ class PlaylistDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     Map? playlist = context.watch<LibraryService>().getPlaylist(playlistkey);
     return playlist == null
-        ? const AdaptiveScaffold(
+        ? AdaptiveScaffold(
+            appBar: AdaptiveAppBar(),
             body: Center(
-              child: Text('Not available'),
+              child: Text(
+                S.of(context).Playlist_Not_Available,
+                style: TextStyle(
+                  fontSize: 18,
+                ),
+              ),
             ),
           )
         : AdaptiveScaffold(

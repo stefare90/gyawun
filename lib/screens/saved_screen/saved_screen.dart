@@ -128,6 +128,12 @@ class _SavedScreenState extends State<SavedScreen> {
                     ),
                     trailing: Icon(AdaptiveIcons.chevron_right),
                     onTap: () => context.push('/saved/downloads'),
+                    onSecondaryTap: () {
+                      Modals.showDownloadBottomModal(context);
+                    },
+                    onLongPress: () {
+                      Modals.showDownloadBottomModal(context);
+                    },
                   ),
                   AdaptiveListTile(
                     margin: const EdgeInsets.symmetric(vertical: 4),

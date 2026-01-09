@@ -28,7 +28,7 @@ class SettingsManager extends ChangeNotifier {
   bool _amoledBlack = true;
   bool _dynamicColors = false;
   bool _equalizerEnabled = false;
-  List<double> _equalizerBandsGain = [];
+  Map _equalizerParameters = {};
   bool _loudnessEnabled = false;
   double _loudnessTargetGain = 0.0;
 
@@ -47,10 +47,17 @@ class SettingsManager extends ChangeNotifier {
   Color? get accentColor => _accentColor;
   bool get amoledBlack => _amoledBlack;
   bool get dynamicColors => _dynamicColors;
-  bool get equalizerEnabled => _equalizerEnabled;
-  List<double> get equalizerBandsGain => _equalizerBandsGain;
+
   bool get loudnessEnabled => _loudnessEnabled;
   double get loudnessTargetGain => _loudnessTargetGain;
+
+  bool get equalizerEnabled => _equalizerEnabled;
+  Map get equalizerParameters => _equalizerParameters;
+  List<double> get equalizerBandsGain =>
+      (equalizerParameters['bands'] as List?)
+          ?.map<double>((e) => (e['gain'] as num).toDouble())
+          .toList() ??
+      [];
 
   Map get settings => _box.toMap();
   SettingsManager() {
@@ -78,8 +85,7 @@ class SettingsManager extends ChangeNotifier {
     _equalizerEnabled = _box.get('EQUALIZER_ENABLED', defaultValue: false);
     _loudnessEnabled = _box.get('LOUDNESS_ENABLED', defaultValue: false);
     _loudnessTargetGain = _box.get('LOUDNESS_TARGET_GAIN', defaultValue: 0.0);
-    _equalizerBandsGain =
-        _box.get('EQUALIZER_BANDS_GAIN', defaultValue: []).cast<double>();
+    _equalizerParameters = _box.get('EQUALIZER_PARAMETERS', defaultValue: {});
   }
 
   setThemeMode(ThemeMode mode) async {
@@ -152,17 +158,15 @@ class SettingsManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  set equalizerBandsGain(List<double>? value) {
-    if (value != null) {
-      _box.put('EQUALIZER_BANDS_GAIN', value);
-      _equalizerBandsGain = value;
-      notifyListeners();
-    }
+  Future<void> setEqualizerParameters(Map value) async {
+    await _box.put('EQUALIZER_PARAMETERS', value);
+    _equalizerParameters = value;
+    notifyListeners();
   }
 
   Future<void> setEqualizerBandsGain(int index, double value) async {
-    _equalizerBandsGain[index] = value;
-    await _box.put('EQUALIZER_BANDS_GAIN', equalizerBandsGain);
+    _equalizerParameters['bands'][index]['gain'] = value;
+    await _box.put('EQUALIZER_PARAMETERS', _equalizerParameters);
     notifyListeners();
   }
 

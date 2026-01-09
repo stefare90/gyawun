@@ -135,39 +135,29 @@ class MediaPlayer extends ChangeNotifier {
     await _equalizer!.setEnabled(GetIt.I<SettingsManager>().equalizerEnabled);
     _equalizer!.parameters.then((value) async {
       _equalizerParams ??= value;
-      final List<AndroidEqualizerBand> bands = _equalizerParams!.bands;
-      if (GetIt.I<SettingsManager>().equalizerBandsGain.isEmpty) {
-        GetIt.I<SettingsManager>().equalizerBandsGain =
-            List.generate(bands.length, (index) => 0.0);
-      }
-
-      List<double> equalizerBandsGain =
-          GetIt.I<SettingsManager>().equalizerBandsGain;
-      for (var e in bands) {
-        final gain =
-            equalizerBandsGain.isNotEmpty ? equalizerBandsGain[e.index] : 0.0;
-        _equalizerParams!.bands[e.index].setGain(gain);
+      if (GetIt.I<SettingsManager>().equalizerParameters.isEmpty) {
+        GetIt.I<SettingsManager>()
+            .setEqualizerParameters(_equalizerParams!.toMap());
+      } else {
+        List<double> storedBandsGain =
+            GetIt.I<SettingsManager>().equalizerBandsGain;
+        final List<AndroidEqualizerBand> bands = _equalizerParams!.bands;
+        for (var e in bands) {
+          final gain =
+              storedBandsGain.isNotEmpty ? storedBandsGain[e.index] : 0.0;
+          _equalizerParams!.bands[e.index].setGain(gain);
+        }
       }
     });
   }
 
   Future<Map> getEqualizerParameters() async {
+    Map storedParams = GetIt.I<SettingsManager>().equalizerParameters;
+    if (storedParams.isNotEmpty) return storedParams;
     _equalizerParams = await _equalizer!.parameters;
-    final List<AndroidEqualizerBand> bands = _equalizerParams!.bands;
-    final List<Map> bandList = bands
-        .map(
-          (e) => {
-            'centerFrequency': e.centerFrequency,
-            'gain': e.gain,
-            'index': e.index,
-          },
-        )
-        .toList();
-    return {
-      'maxDecibels': _equalizerParams!.maxDecibels,
-      'minDecibels': _equalizerParams!.minDecibels,
-      'bands': bandList
-    };
+    await GetIt.I<SettingsManager>()
+        .setEqualizerParameters(_equalizerParams!.toMap());
+    return GetIt.I<SettingsManager>().equalizerParameters;
   }
 
   Future<void> setLoudnessEnabled(bool value) async {
@@ -186,9 +176,9 @@ class MediaPlayer extends ChangeNotifier {
   }
 
   void setEqualizerBandGain(int bandIndex, double gain) async {
+    await GetIt.I<SettingsManager>().setEqualizerBandsGain(bandIndex, gain);
     _equalizerParams = await _equalizer!.parameters;
     await _equalizerParams!.bands[bandIndex].setGain(gain);
-    await GetIt.I<SettingsManager>().setEqualizerBandsGain(bandIndex, gain);
   }
 
   void _listenToChangesInPlaylist() {
@@ -551,4 +541,20 @@ class ProgressBarState {
       {this.current = Duration.zero,
       this.buffered = Duration.zero,
       this.total = Duration.zero});
+}
+
+extension on AndroidEqualizerParameters {
+  Map<String, dynamic> toMap() {
+    return {
+      'maxDecibels': maxDecibels,
+      'minDecibels': minDecibels,
+      'bands': bands
+          .map((e) => {
+                'centerFrequency': e.centerFrequency,
+                'gain': e.gain,
+                'index': e.index,
+              })
+          .toList()
+    };
+  }
 }

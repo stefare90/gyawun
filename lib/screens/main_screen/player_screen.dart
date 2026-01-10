@@ -470,6 +470,7 @@ class NameAndControls extends StatelessWidget {
               children: [
                 TextScroll(
                   song?.title ?? 'Title',
+                  key: Key(song?.title ?? 'Title'),
                   style: bigTextStyle(context, bold: true),
                   mode: TextScrollMode.endless,
                 ),

@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:gyawun/generated/l10n.dart';
 import 'package:gyawun/screens/settings_screen/setting_item.dart';
 import 'package:gyawun/services/bottom_message.dart';
+import 'package:gyawun/services/settings_manager.dart';
 import 'package:gyawun/utils/bottom_modals.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
+import 'package:provider/provider.dart';
 
 class PrivacyScreen extends StatelessWidget {
   const PrivacyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Box box = Hive.box('SETTINGS');
+    final settings = context.select((SettingsManager s) => (
+          playbackHistory: s.playbackHistory,
+          searchHistory: s.searchHistory,
+        ));
     return Scaffold(
       appBar: AppBar(
         title: Text("Privacy"),
@@ -23,18 +27,13 @@ class PrivacyScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
               GroupTitle(title: "Playback"),
-              ValueListenableBuilder(
-                valueListenable: box.listenable(keys: ['PLAYBACK_HISTORY']),
-                builder: (context, item, child) {
-                  return SettingSwitchTile(
-                    title: S.of(context).Enable_Playback_History,
-                    leading: Icon(Icons.manage_history_rounded),
-                    isFirst: true,
-                    value: item.get('PLAYBACK_HISTORY', defaultValue: true),
-                    onChanged: (value) async {
-                      await box.put('PLAYBACK_HISTORY', value);
-                    },
-                  );
+              SettingSwitchTile(
+                title: S.of(context).Enable_Playback_History,
+                leading: Icon(Icons.manage_history_rounded),
+                isFirst: true,
+                value: settings.playbackHistory,
+                onChanged: (value) async {
+                  context.read<SettingsManager>().playbackHistory = value;
                 },
               ),
               SettingTile(
@@ -58,18 +57,13 @@ class PrivacyScreen extends StatelessWidget {
                 },
               ),
               GroupTitle(title: "Search"),
-              ValueListenableBuilder(
-                valueListenable: box.listenable(keys: ['SEARCH_HISTORY']),
-                builder: (context, item, child) {
-                  return SettingSwitchTile(
-                    title: S.of(context).Enable_Search_History,
-                    leading: Icon(Icons.saved_search_rounded),
-                    isFirst: true,
-                    value: item.get('SEARCH_HISTORY', defaultValue: true),
-                    onChanged: (value) async {
-                      await box.put('SEARCH_HISTORY', value);
-                    },
-                  );
+              SettingSwitchTile(
+                title: S.of(context).Enable_Search_History,
+                leading: Icon(Icons.saved_search_rounded),
+                isFirst: true,
+                value: settings.searchHistory,
+                onChanged: (value) async {
+                  context.read<SettingsManager>().searchHistory = value;
                 },
               ),
               SettingTile(

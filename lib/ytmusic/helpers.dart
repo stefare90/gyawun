@@ -1,4 +1,5 @@
-import "package:hive_flutter/hive_flutter.dart";
+import "package:get_it/get_it.dart";
+import "package:gyawun/services/settings_manager.dart";
 
 Map<String, String> initializeHeaders({String language = 'en'}) {
   Map<String, String> h = {
@@ -25,8 +26,8 @@ Map<String, dynamic> initializeContext() {
   return {
     'context': {
       'client': {
-        "hl": Hive.box('SETTINGS').get('LANGUAGE', defaultValue: 'en-IN'),
-        "gl": Hive.box('SETTINGS').get('LOCATION', defaultValue: 'IN'),
+        "hl": GetIt.I<SettingsManager>().language['value'],
+        "gl": GetIt.I<SettingsManager>().location['value'],
         'clientName': 'WEB_REMIX',
         'clientVersion': '1.$date.01.00',
       },

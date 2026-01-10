@@ -36,8 +36,7 @@ class FileStorage {
   static Future<void> initialise() async {
     Directory directory = Directory("dir");
     if (Platform.isAndroid) {
-      directory = Directory(Hive.box('SETTINGS')
-          .get('APP_FOLDER', defaultValue: FileStorage.defaultPath));
+      directory = Directory(GetIt.I<SettingsManager>().appFolder);
     } else if (Platform.isWindows) {
       directory =
           Directory(path.join((await getDownloadsDirectory())!.path, 'Gyawun'));
@@ -58,9 +57,7 @@ class FileStorage {
   updateDirectories() async {
     Directory directory = Directory("dir");
     if (Platform.isAndroid) {
-      directory = Directory(Hive.box('SETTINGS')
-              .get('APP_FOLDER', defaultValue: FileStorage.defaultPath) +
-          '/Gyawun');
+      directory = Directory('${GetIt.I<SettingsManager>().appFolder}/Gyawun');
     } else if (Platform.isWindows) {
       directory =
           Directory(path.join((await getDownloadsDirectory())!.path, 'Gyawun'));

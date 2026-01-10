@@ -10,12 +10,13 @@ import 'package:provider/provider.dart';
 
 import '../../../generated/l10n.dart';
 
-
 class PlayerSettingsScreen extends StatelessWidget {
   const PlayerSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final settings =
+        context.select((SettingsManager s) => (skipSilence: s.skipSilence));
     return Scaffold(
       appBar: AppBar(
         title: Text("Player"),
@@ -24,30 +25,28 @@ class PlayerSettingsScreen extends StatelessWidget {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1000),
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               SettingTile(
-          title: S.of(context).Loudness_And_Equalizer,
-          leading: Icon(Icons.equalizer_outlined),
-          isFirst: true,
-          isLast: !Platform.isAndroid,
-          onTap: (){
-            context.go('/settings/player/equalizer');
-          },
-        ),
-        if (!Platform.isWindows)
-        SettingSwitchTile(
-          title: S.of(context).Skip_Silence,
-          leading: Icon(Icons.fast_forward),
-          value: context.watch<SettingsManager>().skipSilence,
-          onChanged: (value) async {
-            await GetIt.I<MediaPlayer>()
-                .skipSilence(value);
-          },
-          isFirst: !Platform.isAndroid,
-          isLast: true,
-        ),
-             
+                title: S.of(context).Loudness_And_Equalizer,
+                leading: Icon(Icons.equalizer_outlined),
+                isFirst: true,
+                isLast: !Platform.isAndroid,
+                onTap: () {
+                  context.go('/settings/player/equalizer');
+                },
+              ),
+              if (Platform.isAndroid)
+                SettingSwitchTile(
+                  title: S.of(context).Skip_Silence,
+                  leading: Icon(Icons.fast_forward),
+                  value: settings.skipSilence,
+                  onChanged: (value) async {
+                    await GetIt.I<MediaPlayer>().skipSilence(value);
+                  },
+                  isFirst: false,
+                  isLast: true,
+                ),
             ],
           ),
         ),

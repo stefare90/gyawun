@@ -6,9 +6,10 @@ import '../services/settings_manager.dart';
 extension DarkMode on BuildContext {
   /// is dark mode currently enabled?
   bool get isDarkMode {
-    final brightness = watch<SettingsManager>().themeMode == ThemeMode.system
+    final themeMode = select<SettingsManager, ThemeMode>((s) => s.themeMode);
+    final brightness = themeMode == ThemeMode.system
         ? MediaQuery.of(this).platformBrightness
-        : watch<SettingsManager>().themeMode == ThemeMode.dark
+        : themeMode == ThemeMode.dark
             ? Brightness.dark
             : Brightness.light;
     return brightness == Brightness.dark;

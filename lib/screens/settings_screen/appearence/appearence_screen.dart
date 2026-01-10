@@ -7,30 +7,36 @@ import 'package:provider/provider.dart';
 import '../../../generated/l10n.dart';
 import '../../../utils/adaptive_widgets/adaptive_widgets.dart';
 
-
 class AppearenceScreen extends StatelessWidget {
   const AppearenceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.select((SettingsManager s) => (
+          themeMode: s.themeMode,
+          accentColor: s.accentColor,
+          amoledBlack: s.amoledBlack,
+          dynamicColors: s.dynamicColors,
+        ));
     return Scaffold(
       appBar: AppBar(
-        title: Text(S.of(context).Appearence,),
+        title: Text(
+          S.of(context).Appearence,
+        ),
       ),
       body: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1000),
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               GroupTitle(title: "Theme"),
               SettingTile(
                 title: S.of(context).Theme_Mode,
                 leading: Icon(Icons.dark_mode),
-                // subtitle: context.watch<SettingsManager>().themeMode.name,
                 isFirst: true,
                 trailing: AdaptiveDropdownButton(
-                    value: context.watch<SettingsManager>().themeMode,
+                    value: settings.themeMode,
                     items: context
                         .read<SettingsManager>()
                         .themeModes
@@ -54,13 +60,11 @@ class AppearenceScreen extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          color: context.watch<SettingsManager>().accentColor ??
-                              Colors.black,
+                          color: settings.accentColor ?? Colors.black,
                           width: 20,
                         ),
                         Container(
-                          color: context.watch<SettingsManager>().accentColor ??
-                              Colors.white,
+                          color: settings.accentColor ?? Colors.white,
                           width: 20,
                         )
                       ],
@@ -72,7 +76,7 @@ class AppearenceScreen extends StatelessWidget {
               SettingSwitchTile(
                 title: 'Amoled Black',
                 leading: Icon(Icons.mode_night_outlined),
-                value: context.read<SettingsManager>().amoledBlack,
+                value: settings.amoledBlack,
                 onChanged: (value) {
                   context.read<SettingsManager>().amoledBlack = value;
                 },
@@ -81,7 +85,7 @@ class AppearenceScreen extends StatelessWidget {
                 title: S.of(context).Dynamic_Colors,
                 leading: Icon(Icons.color_lens_outlined),
                 isLast: true,
-                value: context.watch<SettingsManager>().dynamicColors,
+                value: settings.dynamicColors,
                 onChanged: (value) {
                   context.read<SettingsManager>().dynamicColors = value;
                 },

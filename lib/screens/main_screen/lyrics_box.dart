@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lyric/lyrics_reader.dart';
 import 'package:get_it/get_it.dart';
-import 'package:hive/hive.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:gyawun/services/settings_manager.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +9,6 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../services/lyrics.dart';
 import '../../services/media_player.dart';
 import '../../utils/adaptive_widgets/adaptive_widgets.dart';
-
-Box _box = Hive.box('SETTINGS');
 
 class LyricsBox extends StatefulWidget {
   const LyricsBox({required this.currentSong, required this.size, super.key});
@@ -81,7 +78,7 @@ class _LyricsBoxState extends State<LyricsBox> {
           album: widget.currentSong.album,
           durationInSeconds:
               GetIt.I<MediaPlayer>().progressBarState.value.total.inSeconds,
-          translation: _box.get('TRANSLATE_LYRICS', defaultValue: false)
+          translation: context.read<SettingsManager>().translateLyrics
               ? context.read<SettingsManager>().language['value']!
               : null,
         );

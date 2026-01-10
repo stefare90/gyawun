@@ -53,34 +53,38 @@ void main() async {
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-  String? visitorId = await Hive.box('SETTINGS').get('VISITOR_ID');
+
+  SettingsManager settingsManager = SettingsManager();
+  GetIt.I.registerSingleton<SettingsManager>(settingsManager);
 
   YTMusic ytMusic = YTMusic(
-    config:
-        YTConfig(visitorData: visitorId ?? '', language: 'en', location: 'IN'),
+    config: YTConfig(
+        visitorData: settingsManager.visitorId ?? '',
+        language: 'en',
+        location: 'IN'),
     onIdUpdate: (visitorId) async {
-      await Hive.box('SETTINGS').put('VISITOR_ID', visitorId);
+      settingsManager.visitorId = visitorId;
     },
   );
+  GetIt.I.registerSingleton<YTMusic>(ytMusic);
 
   final GlobalKey<NavigatorState> panelKey = GlobalKey<NavigatorState>();
+  GetIt.I.registerSingleton(panelKey);
 
   await FileStorage.initialise();
   FileStorage fileStorage = FileStorage();
-  SettingsManager settingsManager = SettingsManager();
-
-  GetIt.I.registerSingleton<SettingsManager>(settingsManager);
-  MediaPlayer mediaPlayer = MediaPlayer();
-  GetIt.I.registerSingleton<MediaPlayer>(mediaPlayer);
-  LibraryService libraryService = LibraryService();
-  GetIt.I.registerSingleton<DownloadManager>(DownloadManager());
-  GetIt.I.registerSingleton(panelKey);
-  GetIt.I.registerSingleton<YTMusic>(ytMusic);
-
   GetIt.I.registerSingleton<FileStorage>(fileStorage);
 
-  GetIt.I.registerSingleton<FavouritesManager>(FavouritesManager());
+  MediaPlayer mediaPlayer = MediaPlayer();
+  GetIt.I.registerSingleton<MediaPlayer>(mediaPlayer);
+
+  LibraryService libraryService = LibraryService();
   GetIt.I.registerSingleton<LibraryService>(libraryService);
+
+  GetIt.I.registerSingleton<DownloadManager>(DownloadManager());
+
+  GetIt.I.registerSingleton<FavouritesManager>(FavouritesManager());
+
   GetIt.I.registerSingleton<Lyrics>(Lyrics());
 
   runApp(
@@ -99,6 +103,13 @@ class Gyawun extends StatelessWidget {
   const Gyawun({super.key});
   @override
   Widget build(BuildContext context) {
+    final settings = context.select((SettingsManager s) => (
+          language: s.language['value']!,
+          themeMode: s.themeMode,
+          dynamicColors: s.dynamicColors,
+          accentColor: s.accentColor,
+          amoledBlack: s.amoledBlack,
+        ));
     return DynamicColorBuilder(builder: (lightScheme, darkScheme) {
       return Shortcuts(
         shortcuts: <LogicalKeySet, Intent>{
@@ -107,7 +118,7 @@ class Gyawun extends StatelessWidget {
         child: MaterialApp.router(
           title: 'Gyawun Music',
           routerConfig: router,
-          locale: Locale(context.watch<SettingsManager>().language['value']!),
+          locale: Locale(settings.language),
           localizationsDelegates: const [
             S.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -116,47 +127,18 @@ class Gyawun extends StatelessWidget {
           ],
           supportedLocales: S.delegate.supportedLocales,
           debugShowCheckedModeBanner: false,
-          themeMode: context.watch<SettingsManager>().themeMode,
+          themeMode: settings.themeMode,
           theme: AppTheme.light(
-            primary: context.watch<SettingsManager>().dynamicColors &&
-                    lightScheme != null
+            primary: settings.dynamicColors && lightScheme != null
                 ? lightScheme.primary
-                : context.watch<SettingsManager>().accentColor,
+                : settings.accentColor,
           ),
           darkTheme: AppTheme.dark(
-            primary: context.watch<SettingsManager>().dynamicColors &&
-                    darkScheme != null
+            primary: settings.dynamicColors && darkScheme != null
                 ? darkScheme.primary
-                : context.watch<SettingsManager>().accentColor,
-            isPureBlack: context.watch<SettingsManager>().amoledBlack,
+                : settings.accentColor,
+            isPureBlack: settings.amoledBlack,
           ),
-          // theme: lightTheme(
-          //   colorScheme: context.watch<SettingsManager>().dynamicColors &&
-          //           lightScheme != null
-          //       ? lightScheme
-          //       : ColorScheme.fromSeed(
-          //           seedColor: context.watch<SettingsManager>().accentColor ??
-          //               Colors.black,
-          //           primary: context.watch<SettingsManager>().accentColor ??
-          //               Colors.black,
-          //           brightness: Brightness.light,
-          //         ),
-          // ),
-          // darkTheme: darkTheme(
-          //   colorScheme: context.watch<SettingsManager>().dynamicColors &&
-          //           darkScheme != null
-          //       ? darkScheme
-          //       : ColorScheme.fromSeed(
-          //           seedColor: context.watch<SettingsManager>().accentColor ??
-          //               primaryWhite,
-          //           primary: context.watch<SettingsManager>().accentColor ??
-          //               primaryWhite,
-          //           brightness: Brightness.dark,
-          //           surface: context.watch<SettingsManager>().amoledBlack
-          //               ? Colors.black
-          //               : null,
-          //         ),
-          // ),
         ),
       );
     });

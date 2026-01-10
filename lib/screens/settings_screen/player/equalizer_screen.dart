@@ -19,7 +19,10 @@ class EqualizerScreen extends StatefulWidget {
 class _EqualizerScreenState extends State<EqualizerScreen> {
   @override
   Widget build(BuildContext context) {
-    SettingsManager settingsManager = context.watch<SettingsManager>();
+    final settings = context.select((SettingsManager s) => (
+          loudnessEnabled: s.loudnessEnabled,
+          equalizerEnabled: s.equalizerEnabled,
+        ));
     return ClipRRect(
       borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20), topRight: Radius.circular(20)),
@@ -39,7 +42,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                   leading: Icon(Icons.volume_up),
                   title: S.of(context).Loudness_Enhancer,
                   isFirst: true,
-                  value: settingsManager.loudnessEnabled,
+                  value: settings.loudnessEnabled,
                   onChanged: (value) async {
                     await GetIt.I<MediaPlayer>().setLoudnessEnabled(value);
                   },
@@ -48,14 +51,14 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                   leading: Icon(Icons.tune),
                   isLast: true,
                   child: LoudnessControls(
-                      disabled: settingsManager.loudnessEnabled == false),
+                      disabled: settings.loudnessEnabled == false),
                 ),
                 GroupTitle(title: "Equalizer"),
                 SettingSwitchTile(
                   title: S.of(context).Enable_Equalizer,
                   leading: Icon(Icons.equalizer),
                   isFirst: true,
-                  value: settingsManager.equalizerEnabled,
+                  value: settings.equalizerEnabled,
                   onChanged: (value) async {
                     await GetIt.I<MediaPlayer>().setEqualizerEnabled(value);
                   },
@@ -63,7 +66,7 @@ class _EqualizerScreenState extends State<EqualizerScreen> {
                 SettingEmptyTile(
                   isLast: true,
                   child: EqualizerControls(
-                    disabled: !settingsManager.equalizerEnabled,
+                    disabled: !settings.equalizerEnabled,
                   ),
                 )
               ],
@@ -132,16 +135,18 @@ class LoudnessControls extends StatelessWidget {
   final bool disabled;
   @override
   Widget build(BuildContext context) {
+    final loudnessTargetGain =
+        context.select<SettingsManager, double>((s) => s.loudnessTargetGain);
     return Slider(
       min: -1,
       max: 1,
-      value: context.watch<SettingsManager>().loudnessTargetGain,
+      value: loudnessTargetGain,
       onChanged: disabled
           ? null
           : (val) async {
               await GetIt.I<MediaPlayer>().setLoudnessTargetGain(val);
             },
-      label: context.watch<SettingsManager>().loudnessTargetGain.toString(),
+      label: loudnessTargetGain.toString(),
     );
   }
 }

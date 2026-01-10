@@ -15,6 +15,7 @@ import 'package:gyawun/services/settings_manager.dart';
 import 'package:gyawun/themes/text_styles.dart';
 import 'package:gyawun/utils/bottom_modals.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 
 import '../../../generated/l10n.dart';
 import '../../../utils/adaptive_widgets/adaptive_widgets.dart';
@@ -24,7 +25,8 @@ class BackupStorageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Box box = Hive.box('SETTINGS');
+    final settings =
+        context.select((SettingsManager s) => ((appFolder: s.appFolder)));
     return Scaffold(
       appBar: AppBar(
         title: Text(S.of(context).Backup_And_Restore),
@@ -37,42 +39,29 @@ class BackupStorageScreen extends StatelessWidget {
             children: [
               if (Platform.isAndroid) ...[
                 GroupTitle(title: "Storage"),
-                ValueListenableBuilder(
-                    valueListenable:
-                        Hive.box('SETTINGS').listenable(keys: ['APP_FOLDER']),
-                    builder: (context, item, child) {
-                      return SettingTile(
-                          title: "App Folder",
-                          leading: Icon(CupertinoIcons.folder),
-                          isFirst: true,
-                          isLast: true,
-                          subtitle: item.get('APP_FOLDER',
-                              defaultValue: '/storage/emulated/0/Download'),
-                          trailing: AdaptiveOutlinedButton(
-                              child: const Text('Change'),
-                              onPressed: () async {
-                                Directory? newDirectory =
-                                    await FolderPicker.pick(
-                                        allowFolderCreation: true,
-                                        context: context,
-                                        rootDirectory: Directory(box.get(
-                                                'APP_FOLDER',
-                                                defaultValue:
-                                                    GetIt.I<FileStorage>()
-                                                        .storagePaths
-                                                        .basePath) ??
-                                            FolderPicker.rootPath),
-                                        shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(10))));
-                                if (newDirectory != null) {
-                                  await box.put(
-                                      'APP_FOLDER', newDirectory.path);
-                                  await GetIt.I<FileStorage>()
-                                      .updateDirectories();
-                                }
-                              }));
-                    })
+                SettingTile(
+                    title: "App Folder",
+                    leading: Icon(CupertinoIcons.folder),
+                    isFirst: true,
+                    isLast: true,
+                    subtitle: settings.appFolder,
+                    trailing: AdaptiveOutlinedButton(
+                        child: const Text('Change'),
+                        onPressed: () async {
+                          Directory? newDirectory = await FolderPicker.pick(
+                              allowFolderCreation: true,
+                              context: context,
+                              rootDirectory: Directory(
+                                  GetIt.I<SettingsManager>().appFolder),
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10))));
+                          if (newDirectory != null) {
+                            GetIt.I<SettingsManager>().appFolder =
+                                newDirectory.path;
+                            await GetIt.I<FileStorage>().updateDirectories();
+                          }
+                        })),
               ],
               GroupTitle(title: S.of(context).Backup_And_Restore),
               SettingTile(

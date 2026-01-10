@@ -8,7 +8,6 @@ import 'package:gyawun/services/bottom_message.dart';
 import 'package:gyawun/services/settings_manager.dart';
 import 'package:gyawun/utils/bottom_modals.dart';
 import 'package:gyawun/ytmusic/ytmusic.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../../generated/l10n.dart';
@@ -20,7 +19,16 @@ class YtMusicScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Box box = Hive.box('SETTINGS');
+    final settings = context.select((SettingsManager s) => (
+          location: s.location,
+          language: s.language,
+          translateLyrics: s.translateLyrics,
+          autofetchSongs: s.autofetchSongs,
+          streamingQuality: s.streamingQuality,
+          downloadQuality: s.downloadQuality,
+          personalisedContent: s.personalisedContent,
+          visitorId: s.visitorId,
+        ));
     return Scaffold(
       appBar: AppBar(
         title: Text(S.of(context).YTMusic),
@@ -37,7 +45,7 @@ class YtMusicScreen extends StatelessWidget {
                   leading: Icon(Icons.location_pin),
                   isFirst: true,
                   trailing: AdaptiveDropdownButton(
-                    value: context.watch<SettingsManager>().location,
+                    value: settings.location,
                     items: context
                         .read<SettingsManager>()
                         .locations
@@ -61,7 +69,7 @@ class YtMusicScreen extends StatelessWidget {
                 title: S.of(context).Language,
                 leading: Icon(Icons.language),
                 trailing: AdaptiveDropdownButton(
-                  value: context.watch<SettingsManager>().language,
+                  value: settings.language,
                   items: context
                       .read<SettingsManager>()
                       .languages
@@ -81,25 +89,20 @@ class YtMusicScreen extends StatelessWidget {
                   },
                 ),
               ),
-              ValueListenableBuilder(
-                valueListenable: box.listenable(keys: ['TRANSLATE_LYRICS']),
-                builder: (context, item, child) {
-                  return SettingSwitchTile(
-                    title: S.of(context).Translate_Lyrics,
-                    leading: Icon(Icons.translate_outlined),
-                    isLast: false,
-                    value: item.get('TRANSLATE_LYRICS', defaultValue: false),
-                    onChanged: (value) async {
-                      await box.put('TRANSLATE_LYRICS', value);
-                    },
-                  );
+              SettingSwitchTile(
+                title: S.of(context).Translate_Lyrics,
+                leading: Icon(Icons.translate_outlined),
+                isLast: false,
+                value: settings.translateLyrics,
+                onChanged: (value) async {
+                  context.read<SettingsManager>().translateLyrics = value;
                 },
               ),
               SettingSwitchTile(
                 title: S.of(context).Autofetch_Songs,
                 leading: Icon(Icons.autorenew_outlined),
                 isLast: true,
-                value: context.watch<SettingsManager>().autofetchSongs,
+                value: settings.autofetchSongs,
                 onChanged: (value) {
                   context.read<SettingsManager>().autofetchSongs = value;
                 },
@@ -111,7 +114,7 @@ class YtMusicScreen extends StatelessWidget {
                 isFirst: true,
                 // hasNavigation: false,
                 trailing: AdaptiveDropdownButton(
-                  value: context.watch<SettingsManager>().streamingQuality,
+                  value: settings.streamingQuality,
                   items: context
                       .read<SettingsManager>()
                       .audioQualities
@@ -138,7 +141,7 @@ class YtMusicScreen extends StatelessWidget {
                 leading: Icon(Icons.cloud_download_rounded),
                 isLast: true,
                 trailing: AdaptiveDropdownButton(
-                    value: context.watch<SettingsManager>().downloadQuality,
+                    value: settings.downloadQuality,
                     items: context
                         .read<SettingsManager>()
                         .audioQualities
@@ -158,24 +161,19 @@ class YtMusicScreen extends StatelessWidget {
                     }),
               ),
               GroupTitle(title: "Privacy"),
-              ValueListenableBuilder(
-                valueListenable: box.listenable(keys: ['PERSONALISED_CONTENT']),
-                builder: (context, item, child) {
-                  return SettingSwitchTile(
-                    title: S.of(context).Personalised_Content,
-                    leading: Icon(Icons.recommend_outlined),
-                    isFirst: true,
-                    value: item.get('PERSONALISED_CONTENT', defaultValue: true),
-                    onChanged: (value) async {
-                      Modals.showCenterLoadingModal(context);
-                      await item.put('PERSONALISED_CONTENT', value);
-                      await GetIt.I<YTMusic>().resetVisitorId();
+              SettingSwitchTile(
+                title: S.of(context).Personalised_Content,
+                leading: Icon(Icons.recommend_outlined),
+                isFirst: true,
+                value: settings.personalisedContent,
+                onChanged: (value) async {
+                  Modals.showCenterLoadingModal(context);
+                  context.read<SettingsManager>().personalisedContent = value;
+                  await GetIt.I<YTMusic>().resetVisitorId();
 
-                      if (context.mounted) {
-                        context.pop();
-                      }
-                    },
-                  );
+                  if (context.mounted) {
+                    context.pop();
+                  }
                 },
               ),
               SettingTile(
@@ -188,46 +186,39 @@ class YtMusicScreen extends StatelessWidget {
                     hintText: S.of(context).Visitor_Id,
                   );
                   if (text != null) {
-                    await box.put('VISITOR_ID', text);
+                    GetIt.I<SettingsManager>().visitorId = text;
                   }
                   GetIt.I<YTMusic>().refreshHeaders();
                 },
               ),
-              ValueListenableBuilder(
-                valueListenable: box.listenable(keys: ['VISITOR_ID']),
-                builder: (context, item, child) {
-                  final id = item.get('VISITOR_ID', defaultValue: '') ?? '';
-                  return SettingTile(
-                      title: S.of(context).Reset_Visitor_Id,
-                      leading: Icon(CupertinoIcons.refresh_thick),
-                      isLast: true,
-                      onTap: () async {
-                        Modals.showCenterLoadingModal(context);
-                        await GetIt.I<YTMusic>().resetVisitorId();
-                        if (context.mounted) {
-                          context.pop();
-                        }
-                      },
-                      trailing: id == ""
-                          ? null
-                          : IconButton(
-                              onPressed: () {
-                                Clipboard.setData(ClipboardData(
-                                        text: box.get('VISITOR_ID',
-                                                defaultValue: '') ??
-                                            ''))
-                                    .then((val) {
-                                  GetIt.I<YTMusic>().refreshHeaders();
-                                  if (context.mounted) {
-                                    BottomMessage.showText(context,
-                                        S.of(context).Copied_To_Clipboard);
-                                  }
-                                });
-                              },
-                              icon: const Icon(Icons.copy),
-                            ),
-                      subtitle: id);
+              SettingTile(
+                title: S.of(context).Reset_Visitor_Id,
+                leading: Icon(CupertinoIcons.refresh_thick),
+                isLast: true,
+                onTap: () async {
+                  Modals.showCenterLoadingModal(context);
+                  await GetIt.I<YTMusic>().resetVisitorId();
+                  if (context.mounted) {
+                    context.pop();
+                  }
                 },
+                trailing: settings.visitorId == null
+                    ? null
+                    : IconButton(
+                        onPressed: () {
+                          Clipboard.setData(
+                                  ClipboardData(text: settings.visitorId ?? ''))
+                              .then((val) {
+                            GetIt.I<YTMusic>().refreshHeaders();
+                            if (context.mounted) {
+                              BottomMessage.showText(
+                                  context, S.of(context).Copied_To_Clipboard);
+                            }
+                          });
+                        },
+                        icon: const Icon(Icons.copy),
+                      ),
+                subtitle: settings.visitorId,
               ),
             ],
           ),

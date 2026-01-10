@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:gyawun/services/settings_manager.dart';
 import 'package:http/http.dart';
 
 import 'helpers.dart';
@@ -35,7 +36,7 @@ abstract class YTMusicServices {
     if (matches != null) {
       final ytcfg = json.decode(matches.group(1).toString());
       visitorId = ytcfg['VISITOR_DATA']?.toString();
-      await Hive.box('SETTINGS').put('VISITOR_ID', visitorId);
+      GetIt.I<SettingsManager>().visitorId = visitorId;
     }
     refreshHeaders();
   }
@@ -76,9 +77,9 @@ abstract class YTMusicServices {
     if (matches != null) {
       final ytcfg = json.decode(matches.group(1).toString());
       visitorId = ytcfg['VISITOR_DATA']?.toString();
-      await Hive.box('SETTINGS').put('VISITOR_ID', visitorId);
+      GetIt.I<SettingsManager>().visitorId = visitorId;
     }
-    return await Hive.box('SETTINGS').get('VISITOR_ID');
+    return GetIt.I<SettingsManager>().visitorId;
   }
 
   Future<Map> sendRequest(String endpoint, Map<String, dynamic> body,

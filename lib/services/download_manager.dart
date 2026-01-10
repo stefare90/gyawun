@@ -1,9 +1,9 @@
 import 'dart:collection';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/ytmusic/ytmusic.dart';
@@ -15,21 +15,31 @@ import 'file_storage.dart';
 import 'settings_manager.dart';
 import 'stream_client.dart';
 
-Box _box = Hive.box('DOWNLOADS');
 YoutubeExplode ytExplode = YoutubeExplode();
 
 class DownloadCanceledException implements Exception {}
 
 class DownloadManager {
+  final Box _box = Hive.box('DOWNLOADS');
   Client client = Client();
-  ValueNotifier<List<Map>> downloads = ValueNotifier([]);
-  ValueNotifier<Map<String, Map>> downloadsByPlaylist = ValueNotifier({});
+  ValueNotifier<List<Map>> downloadsNotifier = ValueNotifier([]);
+  ValueNotifier<Map<String, Map>> playlistsNotifier = ValueNotifier({});
   final Map<String, ValueNotifier<double>> _activeDownloadProgress = {};
   static const String songsPlaylistId = 'SNGS';
   final int maxConcurrentDownloads = 3; // Limit concurrent downloads
   final Queue<String> _activeDownloads =
       Queue<String>(); // Currently active downloads
   final Queue<Map> _downloadQueue = Queue<Map>(); // Queue for pending downloads
+
+  Map get downloads => _box.toMap();
+
+  Listenable songListenable(String songId) {
+    return _box.listenable(keys: [songId]);
+  }
+
+  Map? getDownload(String songId) {
+    return _box.get(songId);
+  }
 
   DownloadManager() {
     _refreshData();
@@ -42,7 +52,7 @@ class DownloadManager {
   void _cleanupDownloads() async {
     final activeIds = _activeDownloads.toSet();
     final queuedIds = _downloadQueue.map((e) => e['videoId']).toSet();
-    for (Map song in downloads.value) {
+    for (Map song in downloadsNotifier.value) {
       final id = song['videoId'];
       final status = song['status'];
       final isInvalidDownloading =
@@ -56,9 +66,9 @@ class DownloadManager {
   }
 
   void _refreshData() {
-    downloads.value = _box.values.toList().cast<Map>();
+    downloadsNotifier.value = _box.values.toList().cast<Map>();
     Map<String, Map> playlists = {};
-    for (Map song in downloads.value) {
+    for (Map song in downloadsNotifier.value) {
       final Map songPlaylists = song["playlists"];
       for (MapEntry entry in songPlaylists.entries) {
         String id = entry.key;
@@ -88,9 +98,8 @@ class DownloadManager {
                   .compareTo(b["playlists"][playlist['id']]['timestamp'] ?? 0)
               as int);
     }
-    if (!DeepCollectionEquality()
-        .equals(downloadsByPlaylist.value, playlists)) {
-      downloadsByPlaylist.value = playlists;
+    if (!DeepCollectionEquality().equals(playlistsNotifier.value, playlists)) {
+      playlistsNotifier.value = playlists;
     }
   }
 
@@ -119,7 +128,7 @@ class DownloadManager {
   }
 
   Future<void> restoreDownloads({List? songs}) async {
-    final songsToRestore = songs ?? downloads.value;
+    final songsToRestore = songs ?? downloadsNotifier.value;
     for (var song in songsToRestore) {
       if (_box.get(song['videoId']) != null) {
         final status = song['status'];
@@ -385,5 +394,11 @@ class DownloadManager {
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<void> setDownloads(Map downloads) async {
+    await Future.forEach(downloads.entries, (entry) async {
+      _box.put(entry.key, entry.value);
+    });
   }
 }

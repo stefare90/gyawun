@@ -19,7 +19,7 @@ class DownloadingScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: ValueListenableBuilder(
-          valueListenable: GetIt.I<DownloadManager>().downloads,
+          valueListenable: GetIt.I<DownloadManager>().downloadsNotifier,
           builder: (context, allSongs, snapshot) {
             List downloadingSongs = allSongs
                 .where((song) => ['DOWNLOADING'].contains(song['status']))

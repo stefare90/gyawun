@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyawun/screens/settings_screen/setting_item.dart';
 import 'package:gyawun/services/bottom_message.dart';
+import 'package:gyawun/services/download_manager.dart';
 import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/services/file_storage.dart';
 import 'package:gyawun/services/library.dart';
@@ -230,7 +231,7 @@ Future<void> _backup(BuildContext context) async {
     backup['data']['song_history'] = history;
   }
   if (items.contains('downloads')) {
-    Map downloads = Hive.box('DOWNLOADS').toMap();
+    Map downloads = GetIt.I<DownloadManager>().downloads;
     backup['data']['downloads'] = downloads;
   }
   String? backupPath = "";

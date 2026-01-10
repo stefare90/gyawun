@@ -8,7 +8,6 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/utils/song_thumbnail.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
@@ -568,11 +567,12 @@ class NameAndControls extends StatelessWidget {
               children: [
                 if (song != null)
                   RepaintBoundary(
-                    child: ValueListenableBuilder(
-                      valueListenable:
-                          Hive.box('DOWNLOADS').listenable(keys: [song!.id]),
-                      builder: (context, box, child) {
-                        final Map? item = box.get(song!.id);
+                    child: ListenableBuilder(
+                      listenable:
+                          GetIt.I<DownloadManager>().songListenable(song!.id),
+                      builder: (context, child) {
+                        final Map? item =
+                            GetIt.I<DownloadManager>().getDownload(song!.id);
                         if (item != null) {
                           if (item['status'] == 'DOWNLOADING') {
                             final notifier = GetIt.I<DownloadManager>()

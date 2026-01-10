@@ -39,7 +39,7 @@ class _DownloadDetailsScreenState extends State<DownloadDetailsScreen> {
 
   Future<void> _verifyPlaylistIntegrity() async {
     final manager = GetIt.I<DownloadManager>();
-    final allPlaylists = manager.downloadsByPlaylist.value;
+    final allPlaylists = manager.playlistsNotifier.value;
     final playlistsMap = Map<String, dynamic>.from(allPlaylists);
     final playlist = playlistsMap[widget.playlistId];
 
@@ -63,7 +63,7 @@ class _DownloadDetailsScreenState extends State<DownloadDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-        valueListenable: GetIt.I<DownloadManager>().downloadsByPlaylist,
+        valueListenable: GetIt.I<DownloadManager>().playlistsNotifier,
         builder: (context, allPlaylists, child) {
           final Map playlist = allPlaylists[widget.playlistId] ?? {};
           final List songs = playlist['songs'] ?? [];

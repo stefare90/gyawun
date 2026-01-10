@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gyawun/services/download_manager.dart';
 import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/utils/extensions.dart';
 import 'package:gyawun/utils/internet_guard.dart';
@@ -83,10 +84,12 @@ class _SavedScreenState extends State<SavedScreen> {
                         color: context.isDarkMode ? Colors.white : Colors.black,
                       ),
                     ),
-                    subtitle: ValueListenableBuilder(
-                      valueListenable: GetIt.I<FavouritesManager>().listenable,
-                      builder: (context, box, child) {
-                        return Text(S.of(context).nSongs(box.length));
+                    subtitle: ListenableBuilder(
+                      listenable: GetIt.I<FavouritesManager>().listenable,
+                      builder: (context, child) {
+                        return Text(S
+                            .of(context)
+                            .nSongs(GetIt.I<FavouritesManager>().songsCount));
                       },
                     ),
                     trailing: Icon(AdaptiveIcons.chevron_right),
@@ -120,10 +123,10 @@ class _SavedScreenState extends State<SavedScreen> {
                       ),
                     ),
                     subtitle: ValueListenableBuilder(
-                      valueListenable: Hive.box('DOWNLOADS').listenable(),
-                      builder: (context, box, child) {
-                        List downloaded = box.values.toList();
-                        return Text(S.of(context).nSongs(downloaded.length));
+                      valueListenable:
+                          GetIt.I<DownloadManager>().downloadsNotifier,
+                      builder: (context, downloads, child) {
+                        return Text(S.of(context).nSongs(downloads.length));
                       },
                     ),
                     trailing: Icon(AdaptiveIcons.chevron_right),

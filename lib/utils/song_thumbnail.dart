@@ -1,8 +1,9 @@
 import 'package:audiotags/audiotags.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:gyawun/services/download_manager.dart';
 import 'package:gyawun/utils/enhanced_image.dart';
-import 'package:hive/hive.dart';
 
 class SongThumbnail extends StatefulWidget {
   final Map song;
@@ -57,7 +58,8 @@ class _SongThumbnailState extends State<SongThumbnail> {
   Future<void> _checkLocalThumbnail() async {
     if (!_isCheckingLocal) setState(() => _isCheckingLocal = true);
     MemoryImage? foundImage;
-    final downloadSong = Hive.box('DOWNLOADS').toMap()[widget.song['videoId']];
+    final downloadSong =
+        GetIt.I<DownloadManager>().downloads[widget.song['videoId']];
     if (downloadSong != null &&
         downloadSong['status'] == "DOWNLOADED" &&
         downloadSong['path'] != null) {

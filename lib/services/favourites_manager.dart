@@ -5,9 +5,10 @@ class FavouritesManager {
   final Box _box = Hive.box('FAVOURITES');
   static const playlistId = 'FVRTS';
 
-  ValueListenable<Box> get listenable => _box.listenable();
+  Listenable get listenable => _box.listenable();
 
   Map get songs => _box.toMap();
+  int get songsCount => _box.length;
 
   Map<String, dynamic> get playlist => {
         'title': "Favourites",

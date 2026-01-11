@@ -48,11 +48,16 @@ class BackupStorageScreen extends StatelessWidget {
                     trailing: AdaptiveOutlinedButton(
                         child: const Text('Change'),
                         onPressed: () async {
+                          final appFolder =
+                              Directory(GetIt.I<SettingsManager>().appFolder);
+                          final rootDirectory = await appFolder.exists()
+                              ? appFolder
+                              : Directory(FileStorage.defaultPath);
+                          if (!context.mounted) return;
                           Directory? newDirectory = await FolderPicker.pick(
                               allowFolderCreation: true,
                               context: context,
-                              rootDirectory: Directory(
-                                  GetIt.I<SettingsManager>().appFolder),
+                              rootDirectory: rootDirectory,
                               shape: const RoundedRectangleBorder(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(10))));

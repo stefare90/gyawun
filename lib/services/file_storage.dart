@@ -25,12 +25,10 @@ class FileStorage {
   static bool _initialised = false;
   static final String defaultPath = '/storage/emulated/0/Download/';
   static late StoragePaths _storagePaths;
-  late StoragePaths storagePaths;
   FileStorage() {
     if (!_initialised) {
       throw 'file Storage is Not Initialised. try calling `await FileStorage.initialise()`';
     }
-    storagePaths = _storagePaths;
   }
 
   static Future<void> initialise() async {
@@ -64,7 +62,7 @@ class FileStorage {
     } else {
       directory = await getApplicationDocumentsDirectory();
     }
-    storagePaths = StoragePaths(
+    _storagePaths = StoragePaths(
       basePath: directory.path,
       backupPath: path.join(directory.path, 'Back Up'),
       musicPath: path.join(directory.path, 'Music'),
@@ -78,7 +76,7 @@ class FileStorage {
     String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     String fileName = '${timestamp}_backup';
     if (!(await requestPermissions())) return "";
-    Directory directory = await _getDirectory(storagePaths.backupPath);
+    Directory directory = await _getDirectory(_storagePaths.backupPath);
 
     String filePath = path.join(directory.path, '$fileName.json');
     File file = File(filePath);
@@ -115,7 +113,7 @@ class FileStorage {
     fileName = fileName.replaceAll(avoid, '').replaceAll("'", '');
     //fileName = Uri.decodeFull(fileName);
     if (!(await requestPermissions())) return null;
-    Directory directory = await _getDirectory(storagePaths.musicPath);
+    Directory directory = await _getDirectory(_storagePaths.musicPath);
 
     File file = File(path.join(directory.path, '$fileName.$extension'));
     int number = 1;
@@ -156,7 +154,7 @@ class FileStorage {
   Future<bool> loadBackup(BuildContext context) async {
     if (!(await requestPermissions())) return false;
     FilePickerResult? picker = await FilePicker.platform.pickFiles(
-      initialDirectory: storagePaths.backupPath,
+      initialDirectory: _storagePaths.backupPath,
       allowMultiple: false,
       withData: true,
       type: FileType.custom,

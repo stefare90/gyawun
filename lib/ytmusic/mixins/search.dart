@@ -1,5 +1,6 @@
 import 'package:gyawun/ytmusic/client.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:gyawun/services/history_manager.dart';
 
 import '../helpers.dart';
 import 'utils.dart';
@@ -8,28 +9,12 @@ mixin SearchMixin on YTClient {
   Future<List<Map<String, dynamic>>> getSearchSuggestions(String query,
       {bool detailedRuns = false}) async {
     if (query == '') {
-      return Hive.box('SEARCH_HISTORY')
-          .values
-          .toList()
-          .map((el) => {
-                'type': 'TEXT',
-                'query': el,
-                'isHistory': true,
-              })
-          .toList();
+      return GetIt.I<HistoryManager>().searches.getList();
     }
     Map<String, dynamic> body = {'input': query};
     String endpoint = 'music/get_search_suggestions';
-    List<Map<String, dynamic>> suggestions = Hive.box('SEARCH_HISTORY')
-        .values
-        .where((el) => el.toLowerCase().contains(query.toLowerCase()))
-        .toList()
-        .map((el) => {
-              'type': 'TEXT',
-              'query': el,
-              'isHistory': true,
-            })
-        .toList();
+    List<Map<String, dynamic>> suggestions =
+        GetIt.I<HistoryManager>().searches.getList(filter: query);
     var response = await sendRequest(endpoint, body);
     var contents = response['contents'] ?? [];
     for (Map content in contents) {

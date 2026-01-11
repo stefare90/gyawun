@@ -14,7 +14,7 @@ import 'package:gyawun/services/library.dart';
 import 'package:gyawun/services/settings_manager.dart';
 import 'package:gyawun/themes/text_styles.dart';
 import 'package:gyawun/utils/bottom_modals.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:gyawun/services/history_manager.dart';
 import 'package:provider/provider.dart';
 
 import '../../../generated/l10n.dart';
@@ -221,7 +221,7 @@ Future<void> _backup(BuildContext context) async {
     backup['data']['favourites'] = favourites;
   }
   if (items.contains('song history')) {
-    Map history = Hive.box('SONG_HISTORY').toMap();
+    Map history = GetIt.I<HistoryManager>().songs.all;
     backup['data']['song_history'] = history;
   }
   if (items.contains('downloads')) {

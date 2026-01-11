@@ -7,10 +7,10 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gyawun/services/download_manager.dart';
 import 'package:gyawun/services/favourites_manager.dart';
+import 'package:gyawun/services/history_manager.dart';
 import 'package:gyawun/utils/extensions.dart';
 import 'package:gyawun/utils/internet_guard.dart';
 import 'package:gyawun/utils/playlist_thumbnail.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../generated/l10n.dart';
@@ -153,10 +153,12 @@ class _SavedScreenState extends State<SavedScreen> {
                         color: context.isDarkMode ? Colors.white : Colors.black,
                       ),
                     ),
-                    subtitle: ValueListenableBuilder(
-                      valueListenable: Hive.box('SONG_HISTORY').listenable(),
-                      builder: (context, box, child) {
-                        return Text(S.of(context).nSongs(box.length));
+                    subtitle: ListenableBuilder(
+                      listenable: GetIt.I<HistoryManager>().songs.listenable,
+                      builder: (context, child) {
+                        return Text(S
+                            .of(context)
+                            .nSongs(GetIt.I<HistoryManager>().songs.count));
                       },
                     ),
                     trailing: Icon(AdaptiveIcons.chevron_right),

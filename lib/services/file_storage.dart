@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:gyawun/services/download_manager.dart';
 import 'package:gyawun/services/favourites_manager.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:gyawun/services/history_manager.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -154,9 +154,7 @@ class FileStorage {
       await GetIt.I<LibraryService>().setPlaylists(playlists);
     }
     if (history != null) {
-      await Future.forEach(history.entries, (entry) async {
-        Hive.box('SONG_HISTORY').put(entry.key, entry.value);
-      });
+      await GetIt.I<HistoryManager>().songs.setHistory(history);
     }
     if (downloads != null) {
       await GetIt.I<DownloadManager>().setDownloads(downloads);

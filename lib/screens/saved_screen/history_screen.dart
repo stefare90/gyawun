@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_swipe_action_cell/core/cell.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:gyawun/services/history_manager.dart';
 
 import '../../generated/l10n.dart';
 import '../../utils/adaptive_widgets/adaptive_widgets.dart';
@@ -21,12 +22,10 @@ class HistoryScreen extends StatelessWidget {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1000),
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ValueListenableBuilder(
-            valueListenable: Hive.box('SONG_HISTORY').listenable(),
-            builder: (context, box, child) {
-              List songs = box.values.toList();
-              songs.sort((a, b) =>
-                  (b['updatedAt'] ?? 0).compareTo((a['updatedAt'] ?? 0)));
+          child: ListenableBuilder(
+            listenable: GetIt.I<HistoryManager>().songs.listenable,
+            builder: (context, child) {
+              List songs = GetIt.I<HistoryManager>().songs.getList();
               return ListView.builder(
                 itemCount: songs.length,
                 itemBuilder: (context, index) {
@@ -44,7 +43,9 @@ class HistoryScreen extends StatelessWidget {
                               isDanger: true,
                             ).then((bool confirm) async {
                               if (confirm) {
-                                await box.delete(song['videoId']);
+                                await GetIt.I<HistoryManager>()
+                                    .songs
+                                    .remove(song);
                               } else {
                                 handler(false);
                               }

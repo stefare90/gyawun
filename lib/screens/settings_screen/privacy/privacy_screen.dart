@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:gyawun/generated/l10n.dart';
 import 'package:gyawun/screens/settings_screen/setting_item.dart';
 import 'package:gyawun/services/bottom_message.dart';
+import 'package:gyawun/services/history_manager.dart';
 import 'package:gyawun/services/settings_manager.dart';
 import 'package:gyawun/utils/bottom_modals.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
 class PrivacyScreen extends StatelessWidget {
@@ -48,7 +49,7 @@ class PrivacyScreen extends StatelessWidget {
                     isDanger: true,
                   );
                   if (confirm == true) {
-                    await Hive.box('SONG_HISTORY').clear();
+                    await GetIt.I<HistoryManager>().songs.clear();
                     if (context.mounted) {
                       BottomMessage.showText(
                           context, S.of(context).Playback_History_Deleted);
@@ -78,7 +79,7 @@ class PrivacyScreen extends StatelessWidget {
                     isDanger: true,
                   );
                   if (confirm == true) {
-                    await Hive.box('SEARCH_HISTORY').clear();
+                    await GetIt.I<HistoryManager>().searches.clear();
                     if (context.mounted) {
                       BottomMessage.showText(
                           context, S.of(context).Search_History_Deleted);

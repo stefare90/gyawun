@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_it/get_it.dart';
 import 'package:gyawun/services/favourites_manager.dart';
+import 'package:gyawun/services/history_manager.dart';
 import 'package:gyawun/themes/theme.dart';
 import 'package:gyawun/ytmusic/modals/yt_config.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -83,6 +84,8 @@ void main() async {
   GetIt.I.registerSingleton<DownloadManager>(DownloadManager());
 
   GetIt.I.registerSingleton<FavouritesManager>(FavouritesManager());
+
+  GetIt.I.registerSingleton<HistoryManager>(HistoryManager());
 
   GetIt.I.registerSingleton<Lyrics>(Lyrics());
 

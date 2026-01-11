@@ -5,10 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gyawun/services/settings_manager.dart';
+import 'package:gyawun/services/history_manager.dart';
 import 'package:gyawun/utils/internet_guard.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:provider/provider.dart';
 
 import '../../../generated/l10n.dart';
 import '../../../services/media_player.dart';
@@ -62,10 +60,7 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       initialLoading = true;
     });
-    if (context.read<SettingsManager>().searchHistory) {
-      await Hive.box('SEARCH_HISTORY').delete(value.toLowerCase());
-      await Hive.box('SEARCH_HISTORY').put(value.toLowerCase(), value);
-    }
+    await GetIt.I<HistoryManager>().searches.add(value);
     Map response = await GetIt.I<YTMusic>().search(value);
     if (response.isNotEmpty) {
       results = response['sections'];
@@ -139,6 +134,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             child: TypeAheadField(
                               suggestionsCallback: (query) => GetIt.I<YTMusic>()
                                   .getSearchSuggestions(query),
+                              hideOnEmpty: true,
                               builder: (context, controller, focusNode) {
                                 _textEditingController = controller;
                                 _focusNode = focusNode;

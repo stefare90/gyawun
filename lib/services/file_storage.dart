@@ -22,26 +22,18 @@ import 'library.dart';
 import 'settings_manager.dart';
 
 class FileStorage {
-  static bool _initialised = false;
   static final String defaultPath = '/storage/emulated/0/Download/';
-  static late StoragePaths _storagePaths;
-  FileStorage() {
-    if (!_initialised) {
-      throw 'file Storage is Not Initialised. try calling `await FileStorage.initialise()`';
-    }
+  late StoragePaths _storagePaths;
+  FileStorage._();
+
+  static Future<FileStorage> create() async {
+    final instance = FileStorage._();
+    await instance.setupPaths();
+    return instance;
   }
 
-  static Future<void> initialise() async {
-    Directory directory = Directory("dir");
-    if (Platform.isAndroid) {
-      directory = Directory(GetIt.I<SettingsManager>().appFolder);
-    } else if (Platform.isWindows) {
-      directory =
-          Directory(path.join((await getDownloadsDirectory())!.path, 'Gyawun'));
-    } else {
-      directory = await getApplicationDocumentsDirectory();
-    }
-
+  Future<void> setupPaths() async {
+    Directory directory = await _getAppDirectory();
     _storagePaths = StoragePaths(
       basePath: directory.path,
       backupPath: path.join(directory.path, 'Back Up'),
@@ -49,27 +41,6 @@ class FileStorage {
     );
     await _getDirectory(_storagePaths.backupPath);
     await _getDirectory(_storagePaths.musicPath);
-    _initialised = true;
-  }
-
-  updateDirectories() async {
-    Directory directory = Directory("dir");
-    if (Platform.isAndroid) {
-      directory = Directory('${GetIt.I<SettingsManager>().appFolder}/Gyawun');
-    } else if (Platform.isWindows) {
-      directory =
-          Directory(path.join((await getDownloadsDirectory())!.path, 'Gyawun'));
-    } else {
-      directory = await getApplicationDocumentsDirectory();
-    }
-    _storagePaths = StoragePaths(
-      basePath: directory.path,
-      backupPath: path.join(directory.path, 'Back Up'),
-      musicPath: path.join(directory.path, 'Music'),
-    );
-    await _getDirectory(_storagePaths.backupPath);
-    await _getDirectory(_storagePaths.musicPath);
-    _initialised = true;
   }
 
   Future<String> saveBackUp(Map data) async {
@@ -193,7 +164,19 @@ class FileStorage {
     return true;
   }
 
-  static Future<Directory> _getDirectory(String pathString) async {
+  Future<Directory> _getAppDirectory() async {
+    if (Platform.isAndroid) {
+      return Directory(
+          path.join(GetIt.I<SettingsManager>().appFolder, 'Gyawun'));
+    }
+    if (Platform.isWindows) {
+      return Directory(
+          path.join((await getDownloadsDirectory())!.path, 'Gyawun'));
+    }
+    return await getApplicationDocumentsDirectory();
+  }
+
+  Future<Directory> _getDirectory(String pathString) async {
     Directory dir = Directory(pathString);
     if (!(await dir.exists())) {
       await dir.create(recursive: true);
@@ -201,7 +184,7 @@ class FileStorage {
     return dir;
   }
 
-  static Future<bool> requestPermissions() async {
+  Future<bool> requestPermissions() async {
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       // Desktop platforms do not need permission
       return true;
@@ -243,7 +226,7 @@ class FileStorage {
   }
 
   // Helper function to get Android SDK version
-  static Future<int?> _getAndroidSdkInt() async {
+  Future<int?> _getAndroidSdkInt() async {
     try {
       final String? sdkString = await MethodChannel('flutter/platform')
           .invokeMethod<String>('SystemNavigator.getPlatformVersion');

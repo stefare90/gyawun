@@ -71,8 +71,7 @@ void main() async {
   final GlobalKey<NavigatorState> panelKey = GlobalKey<NavigatorState>();
   GetIt.I.registerSingleton(panelKey);
 
-  await FileStorage.initialise();
-  FileStorage fileStorage = FileStorage();
+  FileStorage fileStorage = await FileStorage.create();
   GetIt.I.registerSingleton<FileStorage>(fileStorage);
 
   MediaPlayer mediaPlayer = MediaPlayer();

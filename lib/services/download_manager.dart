@@ -199,7 +199,7 @@ class DownloadManager {
       });
       _startTrackingProgress(song['videoId']);
 
-      if (!(await FileStorage.requestPermissions())) {
+      if (!(await GetIt.I<FileStorage>().requestPermissions())) {
         throw Exception('Storage permissions not granted.');
       }
 

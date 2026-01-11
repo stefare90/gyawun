@@ -64,7 +64,7 @@ class BackupStorageScreen extends StatelessWidget {
                           if (newDirectory != null) {
                             GetIt.I<SettingsManager>().appFolder =
                                 newDirectory.path;
-                            await GetIt.I<FileStorage>().updateDirectories();
+                            await GetIt.I<FileStorage>().setupPaths();
                           }
                         })),
               ],

@@ -103,9 +103,9 @@ Map<String, dynamic> handlePageHeader(Map<String, dynamic> header,
     }
   }
   List? menuItems = nav(header, ['menu', 'menuRenderer', 'items']) ??
-      (nav(header, ['buttons']) as List?)
-              ?.firstWhere((el) => el['menuRenderer'] != null)?['menuRenderer']
-          ?['items'];
+      (nav(header, ['buttons']) as List?)?.firstWhere(
+          (el) => el['menuRenderer'] != null,
+          orElse: () => null)?['menuRenderer']?['items'];
   if (menuItems != null) {
     for (Map run in menuItems) {
       String? iconType =

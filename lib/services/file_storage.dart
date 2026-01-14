@@ -145,7 +145,7 @@ class FileStorage {
     Map? downloads = backup['data']?['downloads'];
     if (settings != null) {
       await GetIt.I<SettingsManager>().setSettings(settings);
-      await GetIt.I<YTMusic>().refreshHeaders();
+      GetIt.I<YTMusic>().refreshHeaders();
     }
     if (favourites != null) {
       await GetIt.I<FavouritesManager>().setFavourites(favourites);

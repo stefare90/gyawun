@@ -8,7 +8,6 @@ import 'package:get_it/get_it.dart';
 import 'package:gyawun/services/favourites_manager.dart';
 import 'package:gyawun/services/history_manager.dart';
 import 'package:gyawun/themes/theme.dart';
-import 'package:gyawun/ytmusic/modals/yt_config.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
@@ -58,15 +57,7 @@ void main() async {
   SettingsManager settingsManager = SettingsManager();
   GetIt.I.registerSingleton<SettingsManager>(settingsManager);
 
-  YTMusic ytMusic = YTMusic(
-    config: YTConfig(
-        visitorData: settingsManager.visitorId ?? '',
-        language: 'en',
-        location: 'IN'),
-    onIdUpdate: (visitorId) async {
-      settingsManager.visitorId = visitorId;
-    },
-  );
+  YTMusic ytMusic = YTMusic();
   GetIt.I.registerSingleton<YTMusic>(ytMusic);
 
   final GlobalKey<NavigatorState> panelKey = GlobalKey<NavigatorState>();

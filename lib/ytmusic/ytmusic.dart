@@ -5,5 +5,5 @@ import 'mixins/browsing.dart';
 import 'mixins/search.dart';
 
 class YTMusic extends YTClient with BrowsingMixin, LibraryMixin, SearchMixin {
-  YTMusic({super.config, super.onIdUpdate});
+  YTMusic();
 }

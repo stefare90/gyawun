@@ -1,19 +1,18 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:gyawun/services/settings_manager.dart';
 import 'package:gyawun/ytmusic/helpers.dart';
-import 'package:gyawun/ytmusic/modals/yt_config.dart';
 import 'package:http/http.dart';
 
 class YTClient {
-  YTClient({required this.config, this.onIdUpdate}) {
+  YTClient() {
     init();
   }
   Map<String, String> headers = {};
   Map<String, dynamic> context = {};
   int? signatureTimestamp;
-  YTConfig? config;
-  void Function(String visitorId)? onIdUpdate;
 
   static const ytmDomain = 'music.youtube.com';
   static const httpsYtmDomain = 'https://music.youtube.com';
@@ -28,22 +27,19 @@ class YTClient {
   ValueNotifier<int> get lastConnectionError => lastConnectionErrorTime;
 
   Future<void> init() async {
-    headers = initializeHeaders();
-    context = initializeContext();
-
-    if (config?.visitorData != null) {
-      headers['X-Goog-Visitor-Id'] = config!.visitorData;
-    }
+    refreshHeaders();
+    refreshContext();
   }
 
   void refreshContext() {
     context = initializeContext();
   }
 
-  Future<void> refreshHeaders() async {
+  void refreshHeaders() {
     headers = initializeHeaders();
-    if (config?.visitorData != null) {
-      headers['X-Goog-Visitor-Id'] = config!.visitorData;
+    final visitorId = GetIt.I<SettingsManager>().visitorId;
+    if (visitorId != null) {
+      headers['X-Goog-Visitor-Id'] = visitorId;
     }
   }
 
@@ -51,19 +47,25 @@ class YTClient {
     Map<String, String> newHeaders = Map.from(headers);
     newHeaders.remove('X-Goog-Visitor-Id');
     final response = await sendGetRequest(httpsYtmDomain, newHeaders);
-    final reg = RegExp(r'ytcfg\.set\s*\(\s*({.+?})\s*\)\s*;');
-    RegExpMatch? matches = reg.firstMatch(response.body);
+    final reg = RegExp(r'Secure-YEC=([^;]+)');
+    final String? cookie = response.headers['set-cookie'];
+    if (cookie == null) return;
+    RegExpMatch? matches = reg.firstMatch(cookie);
     String? visitorId;
-    if (matches != null) {
-      final ytcfg = json.decode(matches.group(1).toString());
-      visitorId = ytcfg['VISITOR_DATA']?.toString();
-      config ??= YTConfig(visitorData: '', language: 'en', location: 'IN');
-      config = config!.copyWith(visitorData: visitorId);
-      if (onIdUpdate != null && visitorId != null) {
-        onIdUpdate!(visitorId);
-      }
-    }
+    if (matches == null) return;
+    visitorId = matches.group(1).toString();
+    GetIt.I<SettingsManager>().visitorId = visitorId;
     refreshHeaders();
+  }
+
+  void updateVisitorId(Map response) {
+    final visitorId = response['responseContext']?['visitorData'];
+    if (visitorId == null) return;
+    final storedVisitorId = GetIt.I<SettingsManager>().visitorId;
+    if (storedVisitorId == null || storedVisitorId != visitorId) {
+      GetIt.I<SettingsManager>().visitorId = visitorId;
+      refreshHeaders();
+    }
   }
 
   static Future<String?> getVisitorid() async {
@@ -132,12 +134,10 @@ class YTClient {
 
       this.headers.addAll(headers ?? {});
 
-      if (config?.visitorData == null || config!.visitorData.isEmpty) {
-        await resetVisitorId();
-      }
       if (this.headers['X-Goog-Visitor-Id'] == null &&
-          config?.visitorData != null) {
-        this.headers['X-Goog-Visitor-Id'] = config!.visitorData;
+          GetIt.I<SettingsManager>().visitorId != null) {
+        this.headers['X-Goog-Visitor-Id'] =
+            GetIt.I<SettingsManager>().visitorId!;
       }
       final Uri uri = Uri.parse(httpsYtmDomain +
           baseApiEndpoint +
@@ -148,7 +148,9 @@ class YTClient {
           await post(uri, headers: this.headers, body: jsonEncode(body));
 
       if (response.statusCode == 200) {
-        return json.decode(response.body) as Map;
+        final resp = json.decode(response.body) as Map;
+        updateVisitorId(resp);
+        return resp;
       } else {
         return {};
       }

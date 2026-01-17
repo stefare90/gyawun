@@ -183,20 +183,36 @@ mixin BrowsingMixin on YTClient {
 
     var response =
         await sendRequest(endpoint, body, additionalParams: continuation);
-    String? continuationString = nav(response, [
-      'continuationContents',
-      'musicPlaylistShelfContinuation',
-      'continuations',
-      0,
-      'nextContinuationData',
-      'continuation'
-    ]);
     List contents = nav(response, [
           'continuationContents',
           'musicPlaylistShelfContinuation',
           'contents'
         ]) ??
+        nav(response, [
+          'onResponseReceivedActions',
+          0,
+          'appendContinuationItemsAction',
+          'continuationItems',
+        ]) ??
         [];
+    String? continuationString = nav(response, [
+          'continuationContents',
+          'musicPlaylistShelfContinuation',
+          'continuations',
+          0,
+          'nextContinuationData',
+          'continuation'
+        ]) ??
+        nav(
+          contents.last,
+          [
+            'continuationItemRenderer',
+            'continuationEndpoint',
+            'continuationCommand',
+            'token'
+          ],
+        );
+
     return {
       'items': handleContents(contents),
       'continuation': continuationString != null

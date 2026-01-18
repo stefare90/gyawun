@@ -197,11 +197,10 @@ class MediaPlayer extends ChangeNotifier {
       } else {
         _songList = newList;
 
-        _currentIndex.value ??= 0;
-        _currentSongNotifier.value =
-            (_songList.length > (_currentIndex.value ?? 0))
-                ? _songList[_currentIndex.value ?? 0].tag
-                : null;
+        final currentIndex = _currentIndex.value ??= 0;
+        _currentSongNotifier.value = (_songList.length > currentIndex)
+            ? _songList[currentIndex].tag
+            : null;
       }
 
       if (shouldAdd == true && _currentSongNotifier.value != null) {
@@ -293,6 +292,38 @@ class MediaPlayer extends ChangeNotifier {
     });
   }
 
+  Future<List> _fetchAndQueueSongs({
+    String? videoId,
+    String? playlistId,
+    String continuation = '',
+    String? params,
+    bool radio = false,
+    bool shuffle = false,
+    bool isNext = false,
+    int offset = 0,
+    int maxContinuations = 50, // playlist and albums with up to 24 * 51 songs
+  }) async {
+    Map songs = await GetIt.I<YTMusic>().getNextSongList(
+        videoId: videoId,
+        playlistId: playlistId,
+        continuation: continuation,
+        params: params,
+        radio: radio,
+        shuffle: shuffle);
+    if (songs["continuation"] != null && maxContinuations > 0) {
+      final newOffset = offset + songs["contents"].length as int;
+      _fetchAndQueueSongs(
+        continuation: songs["continuation"],
+        isNext: isNext,
+        offset: newOffset,
+        maxContinuations: maxContinuations - 1,
+      ).then((s) async {
+        await _addSongListToQueue(s, isNext: isNext, offset: newOffset);
+      });
+    }
+    return songs["contents"];
+  }
+
   void changeLoopMode() {
     switch (_loopMode.value) {
       case LoopMode.off:
@@ -351,16 +382,18 @@ class MediaPlayer extends ChangeNotifier {
     );
   }
 
-  Future<List> _getPlaylistSongs(Map<String, dynamic> mediaItem) async {
+  Future<List> _getPlaylistSongs(
+      {required Map<String, dynamic> mediaItem, bool isNext = false}) async {
     if (mediaItem['songs'] != null) {
       // Get Custom or Downloaded Playlist songs
       return mediaItem['songs'];
     } else {
       // Get Online Playlist songs
-      return mediaItem['type'] == 'ARTIST'
-          ? await GetIt.I<YTMusic>()
-              .getNextSongList(playlistId: mediaItem['playlistId'])
-          : await GetIt.I<YTMusic>().getPlaylistSongs(mediaItem['playlistId']);
+      return _fetchAndQueueSongs(
+        playlistId: mediaItem['playlistId'],
+        isNext: isNext,
+        maxContinuations: mediaItem['type'] == 'ARTIST' ? 0 : 50,
+      );
     }
   }
 
@@ -396,7 +429,10 @@ class MediaPlayer extends ChangeNotifier {
       }
     } else {
       // Case 2: Playlist
-      List songs = await _getPlaylistSongs(mediaItem);
+      List songs = await _getPlaylistSongs(
+        mediaItem: mediaItem,
+        isNext: true,
+      );
       await _addSongListToQueue(songs, isNext: true);
     }
   }
@@ -426,7 +462,7 @@ class MediaPlayer extends ChangeNotifier {
       }
       // Case 2: Playlist
     } else {
-      List songs = await _getPlaylistSongs(mediaItem);
+      List songs = await _getPlaylistSongs(mediaItem: mediaItem);
       await _addSongListToQueue(songs, isNext: false);
     }
   }
@@ -437,25 +473,28 @@ class MediaPlayer extends ChangeNotifier {
     if (!isArtist) {
       await addToQueue(song);
     }
-    List songs = await GetIt.I<YTMusic>().getNextSongList(
-        videoId: song['videoId'],
-        playlistId: song['playlistRadioId'],
-        radio: radio,
-        shuffle: shuffle);
+    List songs = await _fetchAndQueueSongs(
+      videoId: song['videoId'],
+      playlistId: song['playlistRadioId'],
+      radio: radio,
+      shuffle: shuffle,
+      maxContinuations: 0,
+    );
     if (songs.isNotEmpty) songs.removeAt(0);
-    await _addSongListToQueue(songs, isNext: false);
+    await _addSongListToQueue(songs);
     await _player.play();
   }
 
   Future<void> startPlaylistSongs(Map endpoint) async {
     await _player.clearAudioSources();
-    List songs = await GetIt.I<YTMusic>().getNextSongList(
-        playlistId: endpoint['playlistId'], params: endpoint['params']);
-
+    List songs = await _fetchAndQueueSongs(
+      playlistId: endpoint['playlistId'],
+      params: endpoint['params'],
+      maxContinuations: endpoint['type'] == 'ARTIST' ? 0 : 50,
+    );
     if (songs.isNotEmpty && songs.first['videoId'] == null) {
       // if API returned a placeholder, convert or handle accordingly
     }
-
     await _addSongListToQueue(songs);
     await _player.play();
   }
@@ -469,7 +508,8 @@ class MediaPlayer extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _addSongListToQueue(List songs, {bool isNext = false}) async {
+  Future<void> _addSongListToQueue(List songs,
+      {bool isNext = false, int offset = 0}) async {
     if (songs.isEmpty) return;
 
     // Convert your song objects into AudioSources
@@ -481,7 +521,7 @@ class MediaPlayer extends ChangeNotifier {
       if (isNext) {
         // Insert immediately after the current index
         final currentIndex = _player.currentIndex ?? -1;
-        int insertIndex = (currentIndex + 1).clamp(0, queueLength);
+        int insertIndex = (currentIndex + offset + 1).clamp(0, queueLength);
         await _player.insertAudioSources(insertIndex, newSources);
       } else {
         // Append to the end
@@ -498,11 +538,13 @@ class MediaPlayer extends ChangeNotifier {
       if (state.processingState == ProcessingState.completed &&
           _songList.isNotEmpty &&
           GetIt.I<SettingsManager>().autofetchSongs) {
-        List nextSongs = await GetIt.I<YTMusic>().getNextSongList(
-            videoId: _songList[_currentIndex.value ?? 0].tag.id);
-        if (nextSongs.isNotEmpty) nextSongs.removeAt(0);
+        List songs = await _fetchAndQueueSongs(
+          videoId: _songList[_currentIndex.value ?? 0].tag.id,
+          maxContinuations: 0,
+        );
+        if (songs.isNotEmpty) songs.removeAt(0);
         await _player.clearAudioSources();
-        await _addSongListToQueue(nextSongs);
+        await _addSongListToQueue(songs);
         await _player.play();
       }
     });

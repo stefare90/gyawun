@@ -183,6 +183,24 @@ List handleContents(List contents, {List? thumbnails}) {
   return contentsResult;
 }
 
+String? handleContinuations(List? continuations) {
+  if (continuations == null) return null;
+  String? result = nav(continuations, [
+        0,
+        'nextContinuationData',
+        'continuation',
+      ]) ??
+      nav(continuations, [
+        0,
+        'nextRadioContinuationData',
+        'continuation',
+      ]);
+  if (result != null) {
+    result = getContinuationString(result);
+  }
+  return result;
+}
+
 Map<String, dynamic> checkRuns(List? runs) {
   if (runs == null) return {};
   Map<String, dynamic> runResult = {'artists': []};

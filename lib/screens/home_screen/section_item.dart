@@ -244,12 +244,17 @@ class _SongListState extends State<SongList> {
 class SingleColumnList extends StatelessWidget {
   const SingleColumnList({required this.songs, super.key});
   final List songs;
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: songs.map((song) {
-        return SongTile(song: song);
-      }).toList(),
+    return ListView.builder(
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: songs.length,
+      itemBuilder: (context, index) {
+        return SongTile(song: songs[index]);
+      },
     );
   }
 }

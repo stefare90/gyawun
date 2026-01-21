@@ -389,7 +389,7 @@ class MediaPlayer extends ChangeNotifier {
       return mediaItem['songs'];
     } else {
       // Get Online Playlist songs
-      return _fetchAndQueueSongs(
+      return await _fetchAndQueueSongs(
         playlistId: mediaItem['playlistId'],
         isNext: isNext,
         maxContinuations: mediaItem['type'] == 'ARTIST' ? 0 : 50,

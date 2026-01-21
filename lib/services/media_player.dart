@@ -35,6 +35,8 @@ class MediaPlayer extends ChangeNotifier {
 
   bool _shuffleModeEnabled = false;
 
+  Object? _activeSession;
+
   MediaPlayer() {
     if (Platform.isAndroid) {
       _equalizer = AndroidEqualizer();
@@ -65,6 +67,8 @@ class MediaPlayer extends ChangeNotifier {
   bool get shuffleModeEnabled => _shuffleModeEnabled;
   ValueNotifier<LoopMode> get loopMode => _loopMode;
   ValueNotifier<Duration?> get timerDuration => _timerDuration;
+  Object _startSession() => _activeSession = Object();
+  bool _isSessionValid(Object? session) => _activeSession == session;
 
   Stream<
       ({
@@ -302,6 +306,7 @@ class MediaPlayer extends ChangeNotifier {
     bool isNext = false,
     int offset = 0,
     int maxContinuations = 50, // playlist and albums with up to 24 * 51 songs
+    Object? session,
   }) async {
     Map songs = await GetIt.I<YTMusic>().getNextSongList(
         videoId: videoId,
@@ -310,14 +315,17 @@ class MediaPlayer extends ChangeNotifier {
         params: params,
         radio: radio,
         shuffle: shuffle);
+    if (!_isSessionValid(session)) return [];
     if (songs["continuation"] != null && maxContinuations > 0) {
       final newOffset = offset + songs["contents"].length as int;
       _fetchAndQueueSongs(
-        continuation: songs["continuation"],
-        isNext: isNext,
-        offset: newOffset,
-        maxContinuations: maxContinuations - 1,
-      ).then((s) async {
+              continuation: songs["continuation"],
+              isNext: isNext,
+              offset: newOffset,
+              maxContinuations: maxContinuations - 1,
+              session: session)
+          .then((s) async {
+        if (!_isSessionValid(session)) return;
         await _addSongListToQueue(s, isNext: isNext, offset: newOffset);
       });
     }
@@ -383,21 +391,24 @@ class MediaPlayer extends ChangeNotifier {
   }
 
   Future<List> _getPlaylistSongs(
-      {required Map<String, dynamic> mediaItem, bool isNext = false}) async {
+      {required Map<String, dynamic> mediaItem,
+      required Object? session,
+      bool isNext = false}) async {
     if (mediaItem['songs'] != null) {
       // Get Custom or Downloaded Playlist songs
       return mediaItem['songs'];
     } else {
       // Get Online Playlist songs
       return await _fetchAndQueueSongs(
-        playlistId: mediaItem['playlistId'],
-        isNext: isNext,
-        maxContinuations: mediaItem['type'] == 'ARTIST' ? 0 : 50,
-      );
+          playlistId: mediaItem['playlistId'],
+          isNext: isNext,
+          maxContinuations: mediaItem['type'] == 'ARTIST' ? 0 : 50,
+          session: session);
     }
   }
 
   Future<void> playSong(Map<String, dynamic> song) async {
+    final session = _startSession();
     if (song['videoId'] == null) return;
 
     // stop and set the tapped song as the single source so it plays immediately
@@ -406,11 +417,13 @@ class MediaPlayer extends ChangeNotifier {
     await _player.clearAudioSources();
 
     final source = await _getAudioSource(song);
+    if (!_isSessionValid(session)) return;
     await _player.setAudioSources([source]);
     await _player.play();
   }
 
   Future<void> playNext(Map<String, dynamic> mediaItem) async {
+    final session = _startSession();
     // Case 1: A single video/song
     if (mediaItem['videoId'] != null) {
       final audioSource = await _getAudioSource(mediaItem);
@@ -420,6 +433,7 @@ class MediaPlayer extends ChangeNotifier {
       final sequenceLength = _player.sequence.length;
       final insertIndex = (currentIndex + 1).clamp(0, sequenceLength);
 
+      if (!_isSessionValid(session)) return;
       // If player already has something in the queue
       if (sequenceLength > 0) {
         await _player.insertAudioSource(insertIndex, audioSource);
@@ -431,28 +445,34 @@ class MediaPlayer extends ChangeNotifier {
       // Case 2: Playlist
       List songs = await _getPlaylistSongs(
         mediaItem: mediaItem,
+        session: _activeSession,
         isNext: true,
       );
+      if (!_isSessionValid(session)) return;
       await _addSongListToQueue(songs, isNext: true);
     }
   }
 
   Future<void> playAll(List songs, {int index = 0}) async {
+    final session = _startSession();
     await _player.stop();
     await _player.clearAudioSources();
 
     // Build full list and set atomically
     final List<AudioSource> sources = await _getAudioSources(songs);
 
+    if (!_isSessionValid(session)) return;
     await _player.setAudioSources(sources);
     await _player.seek(Duration.zero, index: index);
     if (!_player.playing) await _player.play();
   }
 
   Future<void> addToQueue(Map<String, dynamic> mediaItem) async {
+    final session = _startSession();
     // Case 1: A single video/song
     if (mediaItem['videoId'] != null) {
       final audioSource = await _getAudioSource(mediaItem);
+      if (!_isSessionValid(session)) return;
       if (_player.sequence.isEmpty) {
         // If queue is empty, just set audio source
         await _player.setAudioSource(audioSource);
@@ -462,13 +482,16 @@ class MediaPlayer extends ChangeNotifier {
       }
       // Case 2: Playlist
     } else {
-      List songs = await _getPlaylistSongs(mediaItem: mediaItem);
+      List songs = await _getPlaylistSongs(
+          mediaItem: mediaItem, session: _activeSession);
+      if (!_isSessionValid(session)) return;
       await _addSongListToQueue(songs, isNext: false);
     }
   }
 
   Future<void> startRelated(Map<String, dynamic> song,
       {bool radio = false, bool shuffle = false, bool isArtist = false}) async {
+    final session = _startSession();
     await _player.clearAudioSources();
     if (!isArtist) {
       await addToQueue(song);
@@ -479,27 +502,33 @@ class MediaPlayer extends ChangeNotifier {
       radio: radio,
       shuffle: shuffle,
       maxContinuations: 0,
+      session: session,
     );
+    if (!_isSessionValid(session)) return;
     if (songs.isNotEmpty) songs.removeAt(0);
     await _addSongListToQueue(songs);
     await _player.play();
   }
 
   Future<void> startPlaylistSongs(Map endpoint) async {
+    final session = _startSession();
     await _player.clearAudioSources();
     List songs = await _fetchAndQueueSongs(
       playlistId: endpoint['playlistId'],
       params: endpoint['params'],
       maxContinuations: endpoint['type'] == 'ARTIST' ? 0 : 50,
+      session: session,
     );
     if (songs.isNotEmpty && songs.first['videoId'] == null) {
       // if API returned a placeholder, convert or handle accordingly
     }
+    if (!_isSessionValid(session)) return;
     await _addSongListToQueue(songs);
     await _player.play();
   }
 
   Future<void> stop() async {
+    _activeSession = null;
     await _player.stop();
     await _player.clearAudioSources();
     await _player.seek(Duration.zero, index: 0);
@@ -538,10 +567,13 @@ class MediaPlayer extends ChangeNotifier {
       if (state.processingState == ProcessingState.completed &&
           _songList.isNotEmpty &&
           GetIt.I<SettingsManager>().autofetchSongs) {
+        final session = _startSession();
         List songs = await _fetchAndQueueSongs(
           videoId: _songList[_currentIndex.value ?? 0].tag.id,
           maxContinuations: 0,
+          session: session,
         );
+        if (!_isSessionValid(session)) return;
         if (songs.isNotEmpty) songs.removeAt(0);
         await _player.clearAudioSources();
         await _addSongListToQueue(songs);

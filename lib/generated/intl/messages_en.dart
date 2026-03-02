@@ -116,6 +116,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "Downloading": MessageLookupByLibrary.simpleMessage("Downloading"),
     "Downloads": MessageLookupByLibrary.simpleMessage("Downloads"),
     "Dynamic_Colors": MessageLookupByLibrary.simpleMessage("Dynamic Colors"),
+    "Edit": MessageLookupByLibrary.simpleMessage("Edit"),
+    "Edit_Playlist": MessageLookupByLibrary.simpleMessage("Edit Playlist"),
     "Enable_Equalizer": MessageLookupByLibrary.simpleMessage(
       "Enable Equalizer",
     ),
@@ -225,6 +227,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "Search_Settings": MessageLookupByLibrary.simpleMessage("Search Settings"),
     "Select_Backup": MessageLookupByLibrary.simpleMessage("Select Backup"),
+    "Select_Playlist_Icon": MessageLookupByLibrary.simpleMessage(
+      "Select Playlist Icon",
+    ),
     "Settings": MessageLookupByLibrary.simpleMessage("Settings"),
     "Share": MessageLookupByLibrary.simpleMessage("Share"),
     "Sheikh_Haziq": MessageLookupByLibrary.simpleMessage("Sheikh Haziq"),

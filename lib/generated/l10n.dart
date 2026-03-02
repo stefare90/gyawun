@@ -1111,6 +1111,31 @@ class S {
       args: [],
     );
   }
+
+  /// `Edit`
+  String get Edit {
+    return Intl.message('Edit', name: 'Edit', desc: '', args: []);
+  }
+
+  /// `Edit Playlist`
+  String get Edit_Playlist {
+    return Intl.message(
+      'Edit Playlist',
+      name: 'Edit_Playlist',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Playlist Icon`
+  String get Select_Playlist_Icon {
+    return Intl.message(
+      'Select Playlist Icon',
+      name: 'Select_Playlist_Icon',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
@@ -1120,6 +1145,7 @@ class AppLocalizationDelegate extends LocalizationsDelegate<S> {
     return const <Locale>[
       Locale.fromSubtags(languageCode: 'en'),
       Locale.fromSubtags(languageCode: 'es'),
+      Locale.fromSubtags(languageCode: 'fr'),
       Locale.fromSubtags(languageCode: 'hi'),
       Locale.fromSubtags(languageCode: 'it'),
       Locale.fromSubtags(languageCode: 'tr'),

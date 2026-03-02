@@ -277,5 +277,11 @@
   "View_Equalizer": "Riproduci un brano per vedere l'equalizzatore.",
   "@View_Equalizer": {},
   "No_Offline_Songs": "Nessun brano scaricato",
-  "@No_Offline_Songs": {}
+  "@No_Offline_Songs": {},
+  "Edit": "Modifica",
+  "@Edit": {},
+  "Edit_Playlist": "Modifica Playlist",
+  "@Edit_Playlist": {},
+  "Select_Playlist_Icon": "Seleziona Icona Playlist",
+  "@Select_Playlist_Icon": {}
 }

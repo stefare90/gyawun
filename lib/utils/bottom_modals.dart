@@ -1270,7 +1270,7 @@ BottomModalLayout _playlistBottomModal(BuildContext context, Map playlist) {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      leading: (playlist['isPredefined'] == true)
+      leading: (playlist['isPredefined'] != false)
           ? ClipRRect(
               borderRadius: BorderRadius.circular(
                 playlist['type'] == 'ARTIST' ? 30 : 8,
